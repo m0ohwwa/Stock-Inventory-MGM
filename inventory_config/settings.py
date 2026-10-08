@@ -14,20 +14,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Load environment variables from .env file (must be in project root)
 load_dotenv(BASE_DIR / '.env')
 
-try:
-    from decouple import config
-except ImportError:
-    def config(key, default=None, cast=None):
-        val = os.getenv(key)
-        if val is None or val == '':
-            return default
-        if cast is bool:
-            return str(val).lower() in ('true', '1', 'yes', 'on')
-        if cast is int:
-            return int(val)
-        if callable(cast):
-            return cast(val)
-        return val
+def config(key, default=None, cast=None):
+    val = os.getenv(key)
+    if val is None or val == '':
+        return default
+    if cast is bool:
+        return str(val).lower() in ('true', '1', 'yes', 'on')
+    if cast is int:
+        return int(val)
+    if callable(cast):
+        return cast(val)
+    return val
 
 IS_VERCEL = os.getenv('VERCEL') == '1'
 DEBUG = config('DEBUG', default=not IS_VERCEL, cast=bool) and not IS_VERCEL
