@@ -5,6 +5,8 @@ Django settings for inventory_config project.
 from pathlib import Path
 import os
 from dotenv import load_dotenv
+import dj_database_url
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -27,11 +29,43 @@ except ImportError:
             return cast(val)
         return val
 
-SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-g#qih*+ti#+pwkgfsz4%&p%!w#qd3jrp-g6bw-qfth+oqk&%rl')
+IS_VERCEL = os.getenv('VERCEL') == '1'
+DEBUG = config('DEBUG', default=not IS_VERCEL, cast=bool) and not IS_VERCEL
 
-DEBUG = True
+SECRET_KEY = os.getenv('SECRET_KEY')
+if IS_VERCEL and not SECRET_KEY:
+    raise ImproperlyConfigured('SECRET_KEY must be configured for Vercel deployments.')
+SECRET_KEY = SECRET_KEY or 'django-insecure-local-development-only'
 
-ALLOWED_HOSTS = ['*']
+def _csv_env(name):
+    return [value.strip() for value in os.getenv(name, '').split(',') if value.strip()]
+
+
+def _vercel_host(value):
+    return value.removeprefix('https://').removeprefix('http://').split('/', 1)[0]
+
+
+VERCEL_HOSTS = [
+    _vercel_host(os.getenv(name, ''))
+    for name in ('VERCEL_URL', 'VERCEL_PROJECT_PRODUCTION_URL')
+    if os.getenv(name)
+]
+ALLOWED_HOSTS = list(dict.fromkeys([
+    'localhost',
+    '127.0.0.1',
+    'testserver',
+    *_csv_env('ALLOWED_HOSTS'),
+    *VERCEL_HOSTS,
+]))
+CSRF_TRUSTED_ORIGINS = list(dict.fromkeys([
+    *(f'https://{host}' for host in VERCEL_HOSTS),
+    *_csv_env('CSRF_TRUSTED_ORIGINS'),
+]))
+
+if IS_VERCEL:
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
 
 # Application definition
 INSTALLED_APPS = [
@@ -75,27 +109,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'inventory_config.wsgi.application'
 
-# Database Setup (SQLite by default for zero-setup execution, MySQL settings included below)
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
-}
+# Use the persistent PostgreSQL database when DATABASE_URL is configured;
+# otherwise keep SQLite for local development.
+DATABASE_URL = os.getenv('DATABASE_URL')
+if IS_VERCEL and not DATABASE_URL:
+    raise ImproperlyConfigured('DATABASE_URL must be configured for Vercel deployments.')
 
-# Optional MySQL Configuration (Uncomment and edit credentials to switch to MySQL):
-"""
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'inventory_db',
-        'USER': 'root',
-        'PASSWORD': 'yourpassword',
-        'HOST': 'localhost',
-        'PORT': '3306',
+if DATABASE_URL:
+    DATABASES = {
+        'default': dj_database_url.parse(
+            DATABASE_URL,
+            conn_max_age=0 if IS_VERCEL else 600,
+            conn_health_checks=True,
+        )
     }
-}
-"""
+else:
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 AUTHENTICATION_BACKENDS = [
     'inventory.backends.EmailOrUsernameModelBackend',
