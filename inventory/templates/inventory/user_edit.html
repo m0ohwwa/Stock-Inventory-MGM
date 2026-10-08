@@ -1,0 +1,105 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Edit User Account{% endblock %}
+{% block page_heading %}Edit User Account{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-7">
+        <div class="card card-custom p-4 shadow-sm border-0">
+            <div class="mb-4 border-bottom pb-3 d-flex align-items-center justify-content-between">
+                <div>
+                    <h5 class="fw-bold mb-1"><i class="fa-solid fa-user-pen text-primary me-2"></i>Edit Profile</h5>
+                    <p class="text-muted small m-0">Editing profile for <strong>{{ u.get_full_name|default:u.email|default:"User" }}</strong></p>
+                </div>
+                <a href="{% url 'user_list' %}" class="btn btn-sm btn-outline-secondary rounded-pill px-3">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back
+                </a>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                <div class="row g-3">
+
+                    <!-- Avatar -->
+                    <div class="col-12 text-center mb-2">
+                        <label class="form-label fw-semibold small d-block">Profile Photo</label>
+                        <div class="position-relative d-inline-block">
+                            {% if profile.avatar %}
+                                <img src="{{ profile.avatar.url }}" alt="Avatar" class="rounded-circle shadow-sm mb-2 object-fit-cover" style="object-position:{{ profile.avatar_position_x }}% {{ profile.avatar_position_y }}%;" width="100" height="100" id="avatarPreview">
+                            {% else %}
+                                <div class="rounded-circle shadow-sm mb-2 mx-auto d-flex align-items-center justify-content-center fw-bold text-white"
+                                     style="width:100px;height:100px;font-size:2.5rem;background:var(--primary-color);" id="avatarPreviewFallback">
+                                    {{ u.get_full_name|default:u.email|default:"U"|slice:":1"|upper }}
+                                </div>
+                                <img src="" alt="Avatar" class="rounded-circle shadow-sm mb-2 object-fit-cover d-none" width="100" height="100" id="avatarPreview">
+                            {% endif %}
+                        </div>
+                        <div class="mt-2">
+                            <label for="avatarInput" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
+                                <i class="fa-solid fa-camera me-1"></i> Change Photo
+                            </label>
+                            <input type="file" name="avatar" id="avatarInput" class="d-none" accept="image/*" onchange="previewAvatar(event)">
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">Email Address</label>
+                        <input type="email" name="email" class="form-control" value="{{ u.email }}">
+                    </div>
+
+                    <!-- First Name -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">First Name</label>
+                        <input type="text" name="first_name" class="form-control" value="{{ u.first_name }}">
+                    </div>
+
+                    <!-- Last Name -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">Last Name</label>
+                        <input type="text" name="last_name" class="form-control" value="{{ u.last_name }}">
+                    </div>
+
+                    <!-- Role -->
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">Position</label>
+                        <select name="role" class="form-select">
+                            {% for value, label in role_choices %}
+                                <option value="{{ value }}" {% if profile.role == value %}selected{% endif %}>{{ label }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                </div>
+
+                <div class="d-flex justify-content-end border-top pt-3 mt-4 gap-2">
+                    <a href="{% url 'user_list' %}" class="btn btn-outline-secondary px-4 fw-semibold">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                        <i class="fa-solid fa-floppy-disk me-1"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function previewAvatar(event) {
+        const input = event.target;
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById('avatarPreview');
+                const fallback = document.getElementById('avatarPreviewFallback');
+                img.src = e.target.result;
+                img.classList.remove('d-none');
+                if (fallback) fallback.classList.add('d-none');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+</script>
+{% endblock %}

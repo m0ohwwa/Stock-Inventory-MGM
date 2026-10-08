@@ -1,0 +1,24 @@
+/* Additional Custom Utility Styling for Inventory System */
+.hover-primary:hover {
+    color: var(--primary-color) !important;
+}
+
+.bg-indigo-subtle {
+    background-color: #e0e7ff;
+}
+
+.bg-success-subtle {
+    background-color: #dcfce7;
+}
+
+.bg-warning-subtle {
+    background-color: #fef9c3;
+}
+
+.bg-danger-subtle {
+    background-color: #fee2e2;
+}
+
+.bg-info-subtle {
+    background-color: #e0f2fe;
+}

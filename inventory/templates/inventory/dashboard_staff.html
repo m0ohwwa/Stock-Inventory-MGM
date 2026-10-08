@@ -1,0 +1,156 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Employee Portal - Stock Inventory Management{% endblock %}
+{% block page_heading %}
+<div class="d-flex align-items-center gap-2">
+    <span class="badge bg-success text-white px-2 py-1 rounded fs-6"><i class="fa-solid fa-user me-1"></i> Employee</span>
+    <span>{{ role_title|default:"Employee Operations Portal" }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+<!-- Key Stat Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted small fw-semibold">Products in Catalog</span>
+                <div class="stat-icon bg-indigo-subtle text-primary">
+                    <i class="fa-solid fa-box"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold m-0 text-dark">{{ total_products }}</h3>
+            <span class="text-muted small">Items available</span>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted small fw-semibold">Total Stock Units</span>
+                <div class="stat-icon bg-info-subtle text-info">
+                    <i class="fa-solid fa-cubes"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold m-0 text-dark">{{ total_stock_qty }}</h3>
+            <span class="text-muted small">Total units in warehouse</span>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted small fw-semibold">Low Stock Warnings</span>
+                <div class="stat-icon bg-warning-subtle text-warning">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold m-0 text-warning">{{ low_stock_products|length }}</h3>
+            <span class="text-muted small text-danger fw-semibold">Items low on quantity</span>
+        </div>
+    </div>
+</div>
+
+<!-- Content Grid: My Recent Activity & Low Stock Alerts -->
+<div class="row g-4">
+    <!-- My Recent Transactions -->
+    <div class="col-lg-6">
+        <div class="card card-custom h-100 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+                <h6 class="fw-bold m-0 text-success">
+                    <i class="fa-solid fa-user-check me-2"></i> My Logged Activity
+                </h6>
+                <a href="{% url 'transaction_create' %}" class="btn btn-sm btn-success">+ Record New</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle m-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="small text-muted">Time</th>
+                            <th class="small text-muted">Product</th>
+                            <th class="small text-muted text-center">Type</th>
+                            <th class="small text-muted text-center">Qty</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in my_transactions %}
+                        <tr>
+                            <td class="small text-muted">{{ t.timestamp|date:"M d, H:i" }}</td>
+                            <td class="fw-bold small">{{ t.product.name }}</td>
+                            <td class="text-center">
+                                {% if t.transaction_type == 'IN' %}
+                                    <span class="badge badge-status status-in">Stock In</span>
+                                {% else %}
+                                    <span class="badge badge-status status-out">Stock Out</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center fw-bold">{{ t.quantity }}</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-muted py-4">
+                                <span class="d-block mb-2 text-muted"><i class="fa-solid fa-inbox fs-3"></i></span>
+                                You haven't recorded any stock operations yet today.
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Items Needing Attention -->
+    <div class="col-lg-6">
+        <div class="card card-custom h-100 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+                <h6 class="fw-bold m-0 text-warning">
+                    <i class="fa-solid fa-triangle-exclamation me-2"></i> Items Needing Restock
+                </h6>
+                <a href="{% url 'product_list' %}" class="btn btn-sm btn-light border">Browse All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle m-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="small text-muted">Product</th>
+                            <th class="small text-muted text-center">Current Qty</th>
+                            <th class="small text-muted text-center">Status</th>
+                            <th class="small text-muted text-end">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prod in low_stock_products %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold small text-dark">{{ prod.name }}</div>
+                                <span class="text-muted font-monospace small" style="font-size: 0.75rem;">{{ prod.sku }}</span>
+                            </td>
+                            <td class="text-center fw-bold text-danger">{{ prod.quantity }}</td>
+                            <td class="text-center">
+                                {% if prod.stock_status == 'OUT_OF_STOCK' %}
+                                    <span class="badge badge-status status-out-stock">Out of Stock</span>
+                                {% else %}
+                                    <span class="badge badge-status status-low-stock">Low Stock</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'transaction_create' %}?product={{ prod.id }}" class="btn btn-sm btn-success py-1 px-2">
+                                    <i class="fa-solid fa-plus me-1"></i> Stock In
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-success py-4">
+                                <i class="fa-solid fa-circle-check fs-3 d-block mb-2"></i> All products are adequately stocked!
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

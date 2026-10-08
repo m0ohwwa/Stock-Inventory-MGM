@@ -1,0 +1,266 @@
+{% extends 'inventory/base.html' %}
+{% load currency_tags %}
+
+{% block title %}Admin Dashboard - Stock Inventory Management{% endblock %}
+{% block page_heading %}
+<div class="d-flex align-items-center gap-2">
+    <span>{{ role_title|default:"Administrator Control Dashboard" }}</span>
+</div>
+{% endblock %}
+
+{% block content %}
+
+
+<!-- Admin 6 Stat Cards Grid -->
+<div class="row g-3 mb-4">
+    <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted small fw-semibold" data-en="Total Products" data-kh="ផលិតផលសរុប">Total Products</span>
+                <div class="stat-icon bg-indigo-subtle text-primary">
+                    <i class="fa-solid fa-box"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold m-0 text-dark">{{ total_products }}</h3>
+            <span class="text-muted small" data-en="Cataloged items" data-kh="ទំនិញដែលបានចុះបញ្ជី">Cataloged items</span>
+        </div>
+    </div>
+
+    <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted small fw-semibold" data-en="Total Stock Units" data-kh="បរិមាណស្តុកសរុប">Total Stock Units</span>
+                <div class="stat-icon bg-info-subtle text-info">
+                    <i class="fa-solid fa-cubes"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold m-0 text-dark">{{ total_stock_qty }}</h3>
+            <span class="text-muted small" data-en="Physical inventory" data-kh="ទំនិញជាក់ស្តែង">Physical inventory</span>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-4 col-sm-6">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted small fw-semibold" data-en="Total Inventory Value" data-kh="តម្លៃស្តុក">Total Inventory Value</span>
+                <div class="stat-icon bg-success-subtle text-success">
+                    <i class="fa-solid fa-sack-dollar"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold m-0 text-dark">{% currency total_valuation %}</h3>
+            <span class="text-muted small" data-en="Asset valuation" data-kh="តម្លៃទ្រព្យសម្បត្តិសរុប">Asset valuation</span>
+        </div>
+    </div>
+
+    <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted small fw-semibold" data-en="Low Stock" data-kh="ស្តុកទាប">Low Stock</span>
+                <div class="stat-icon bg-warning-subtle text-warning">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold m-0 text-warning">{{ low_stock_count }}</h3>
+            <span class="text-muted small" data-en="Below min threshold" data-kh="ជិតដល់កម្រិតអប្បបរមា">Below min threshold</span>
+        </div>
+    </div>
+
+    <div class="col-xl-2 col-md-4 col-sm-6">
+        <div class="stat-card">
+            <div class="d-flex align-items-center justify-content-between mb-2">
+                <span class="text-muted small fw-semibold" data-en="Team Members" data-kh="សមាជិកក្រុម">Team Members</span>
+                <div class="stat-icon bg-primary-subtle text-primary">
+                    <i class="fa-solid fa-users"></i>
+                </div>
+            </div>
+            <h3 class="fw-bold m-0 text-dark">{{ team_members_count }}</h3>
+            <span class="text-muted small"><a href="{% url 'user_list' %}" class="text-decoration-none text-primary"><span data-en="Manage Team" data-kh="គ្រប់គ្រងក្រុម">Manage Team</span> &rarr;</a></span>
+        </div>
+    </div>
+</div>
+
+<!-- Dynamic Analytics Section -->
+<div class="row g-4 mb-4">
+    <div class="col-lg-7">
+        <div class="card card-custom p-4 h-100 shadow-sm">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                <h6 class="fw-bold m-0"><i class="fa-solid fa-chart-column text-primary me-2"></i>
+                    <span data-en="Stock Movement Analytics (Units)" data-kh="ទិដ្ឋភាពទូទៅនៃចលនាស្តុក (ឯកតា)">Stock Movement Analytics (Units)</span>
+                </h6>
+                <span class="badge bg-light text-dark" data-en="Cumulative Transactions" data-kh="ប្រវត្តិសរុប">Cumulative Transactions</span>
+            </div>
+            <div style="height: 260px;">
+                <canvas id="stockMovementChart"></canvas>
+            </div>
+        </div>
+    </div>
+    <div class="col-lg-5">
+        <div class="card card-custom p-4 h-100 shadow-sm">
+            <div class="d-flex align-items-center justify-content-between mb-3 border-bottom pb-2">
+                <h6 class="fw-bold m-0"><i class="fa-solid fa-chart-pie text-success me-2"></i>
+                    <span data-en="Category Breakdown" data-kh="ការចែកចាយតាមប្រភេទ">Category Breakdown</span>
+                </h6>
+                <span class="badge bg-light text-dark" data-en="Product Distribution" data-kh="ចំនួនផលិតផល">Product Distribution</span>
+            </div>
+            <div style="height: 260px;" class="d-flex justify-content-center">
+                <canvas id="categoryPieChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Content Grid: Low Stock Alert & Recent Transactions -->
+<div class="row g-4">
+    <!-- Low Stock Items Warning Table -->
+    <div class="col-lg-5">
+        <div class="card card-custom h-100 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+                <h6 class="fw-bold m-0 text-danger">
+                    <i class="fa-solid fa-bell me-2"></i>
+                    <span data-en="Critical Stock Alerts" data-kh="សញ្ញាប្រព្រឹត្ត​ស្តុកទាប/អស់">Critical Stock Alerts</span>
+                </h6>
+                <a href="{% url 'product_list' %}?status=LOW_STOCK" class="btn btn-sm btn-light border" data-en="View All" data-kh="មើលទាំងអស់">View All</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle m-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="small text-muted" data-en="Product" data-kh="ផលិតផល">Product</th>
+                            <th class="small text-muted text-center" data-en="Qty" data-kh="បរិមាណ">Qty</th>
+                            <th class="small text-muted text-center" data-en="Status" data-kh="ស្ថានភាព">Status</th>
+                            <th class="small text-muted text-end" data-en="Action" data-kh="សកម្មភាព">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prod in low_stock_products %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold small text-dark">{{ prod.name }}</div>
+                                <span class="text-muted font-monospace small" style="font-size: 0.75rem;">{{ prod.sku }}</span>
+                            </td>
+                            <td class="text-center fw-bold">{{ prod.quantity }}</td>
+                            <td class="text-center">
+                                {% if prod.stock_status == 'OUT_OF_STOCK' %}
+                                    <span class="badge badge-status status-out-stock" data-en="Out of Stock" data-kh="អស់ស្តុក">Out of Stock</span>
+                                {% else %}
+                                    <span class="badge badge-status status-low-stock" data-en="Low Stock" data-kh="ស្តុកទាប">Low Stock</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-end">
+                                <a href="{% url 'transaction_create' %}?product={{ prod.id }}" class="btn btn-sm btn-success py-1 px-2" title="Restock Stock In">
+                                    <i class="fa-solid fa-plus-circle me-1"></i> Restock
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="4" class="text-center text-success py-4">
+                                <i class="fa-solid fa-circle-check fs-3 d-block mb-2"></i>
+                                <span data-en="All products are adequately stocked!" data-kh="ផលិតផលទាំងអស់មានស្តុកគ្រប់គ្រាន់!">All products are adequately stocked!</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Activity Table -->
+    <div class="col-lg-7">
+        <div class="card card-custom h-100 shadow-sm">
+            <div class="card-header bg-white border-bottom py-3 d-flex align-items-center justify-content-between">
+                <h6 class="fw-bold m-0">
+                    <i class="fa-solid fa-clock-rotate-left me-2 text-primary"></i>
+                    <span data-en="Audit Trail: Recent Transactions" data-kh="ប្រតិបត្តិការស្តុកថ្មីៗ">Audit Trail: Recent Transactions</span>
+                </h6>
+                <a href="{% url 'transaction_list' %}" class="btn btn-sm btn-light border" data-en="Full Log" data-kh="មើលប្រវត្តិទាំងអស់">Full Log</a>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover align-middle m-0">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="small text-muted" data-en="Date" data-kh="កាលបរិច្ឆេទ">Date</th>
+                            <th class="small text-muted" data-en="Product" data-kh="ផលិតផល">Product</th>
+                            <th class="small text-muted text-center" data-en="Type" data-kh="ប្រភេទ">Type</th>
+                            <th class="small text-muted text-center" data-en="Qty" data-kh="បរិមាណ">Qty</th>
+                            <th class="small text-muted" data-en="User" data-kh="អ្នកប្រើ">User</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for t in recent_transactions %}
+                        <tr>
+                            <td class="small text-muted">{{ t.timestamp|date:"M d, H:i" }}</td>
+                            <td>
+                                <div class="fw-bold small text-dark">{{ t.product.name }}</div>
+                            </td>
+                            <td class="text-center">
+                                {% if t.transaction_type == 'IN' %}
+                                    <span class="badge badge-status status-in"><i class="fa-solid fa-arrow-down me-1"></i> Stock In</span>
+                                {% else %}
+                                    <span class="badge badge-status status-out"><i class="fa-solid fa-arrow-up me-1"></i> Stock Out</span>
+                                {% endif %}
+                            </td>
+                            <td class="text-center fw-bold">{{ t.quantity }}</td>
+                            <td class="small"><span class="badge bg-light text-dark font-monospace">{{ t.user.username|default:"System" }}</span></td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-muted py-4">
+                                <span data-en="No recent transactions recorded." data-kh="មិនមានប្រតិបត្តិការស្តុកថ្មីៗទេ។">No recent transactions recorded.</span>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctxMovement = document.getElementById('stockMovementChart').getContext('2d');
+        new Chart(ctxMovement, {
+            type: 'bar',
+            data: {
+                labels: ['Total Stock In', 'Total Stock Out'],
+                datasets: [{
+                    label: 'Units Transacted',
+                    data: [{{ stock_in_total }}, {{ stock_out_total }}],
+                    backgroundColor: ['rgba(79, 70, 229, 0.8)', 'rgba(239, 68, 68, 0.8)'],
+                    borderRadius: 6
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: { y: { beginAtZero: true } }
+            }
+        });
+
+        const ctxCat = document.getElementById('categoryPieChart').getContext('2d');
+        new Chart(ctxCat, {
+            type: 'doughnut',
+            data: {
+                labels: {{ cat_names|safe }},
+                datasets: [{
+                    data: {{ cat_counts|safe }},
+                    backgroundColor: ['#4f46e5', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#3b82f6'],
+                    borderWidth: 2
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { position: 'bottom' } },
+                cutout: '65%'
+            }
+        });
+    });
+</script>
+{% endblock %}

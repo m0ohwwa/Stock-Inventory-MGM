@@ -1,0 +1,138 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Reports & Export - Stock Inventory System{% endblock %}
+{% block page_heading %}Reports & Data Export Center{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h4 class="fw-bold mb-1">Inventory Reports</h4>
+        <p class="text-muted small m-0">Generate and export downloadable CSV spreadsheets or formatted PDF documents</p>
+    </div>
+</div>
+
+<!-- Report Export Action Cards -->
+<div class="row g-4 mb-5">
+    <!-- Full Inventory Report Card -->
+    <div class="col-md-4">
+        <div class="card card-custom p-4 shadow-sm border-0 h-100">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="stat-icon bg-primary-subtle text-primary">
+                    <i class="fa-solid fa-boxes-stacked"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold m-0">Full Stock Catalog</h6>
+                    <span class="text-muted small">{{ total_products }} cataloged products</span>
+                </div>
+            </div>
+            <p class="text-muted small mb-4">Complete list of all products, SKUs, category classifications, prices, quantities, and current asset valuations.</p>
+            <div class="mt-auto d-flex gap-2">
+                <a href="{% url 'export_inventory_csv' %}" class="btn btn-outline-success btn-sm w-50 fw-semibold">
+                    <i class="fa-solid fa-file-csv me-1"></i> CSV
+                </a>
+                <a href="{% url 'export_inventory_pdf' %}" class="btn btn-outline-danger btn-sm w-50 fw-semibold">
+                    <i class="fa-solid fa-file-pdf me-1"></i> PDF
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Alert Report Card -->
+    <div class="col-md-4">
+        <div class="card card-custom p-4 shadow-sm border-0 h-100">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="stat-icon bg-warning-subtle text-warning">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold m-0">Low & Out-of-Stock</h6>
+                    <span class="text-warning small fw-bold">{{ low_stock_count }} items requiring restock</span>
+                </div>
+            </div>
+            <p class="text-muted small mb-4">Targeted report listing items reaching or below minimum stock thresholds for purchasing & reorder planning.</p>
+            <div class="mt-auto d-flex gap-2">
+                <a href="{% url 'export_low_stock_csv' %}" class="btn btn-outline-success btn-sm w-50 fw-semibold">
+                    <i class="fa-solid fa-file-csv me-1"></i> CSV
+                </a>
+                <a href="{% url 'export_low_stock_pdf' %}" class="btn btn-outline-danger btn-sm w-50 fw-semibold">
+                    <i class="fa-solid fa-file-pdf me-1"></i> PDF
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Transaction Movement Log Card -->
+    <div class="col-md-4">
+        <div class="card card-custom p-4 shadow-sm border-0 h-100">
+            <div class="d-flex align-items-center gap-3 mb-3">
+                <div class="stat-icon bg-info-subtle text-info">
+                    <i class="fa-solid fa-arrow-right-arrow-left"></i>
+                </div>
+                <div>
+                    <h6 class="fw-bold m-0">Movement History</h6>
+                    <span class="text-muted small">Stock In & Stock Out records</span>
+                </div>
+            </div>
+            <p class="text-muted small mb-4">Auditing report detailing timestamps, quantities, operational notes, and personnel for all stock transactions.</p>
+            <div class="mt-auto d-flex gap-2">
+                <a href="{% url 'export_transactions_csv' %}" class="btn btn-outline-success btn-sm w-50 fw-semibold">
+                    <i class="fa-solid fa-file-csv me-1"></i> CSV
+                </a>
+                <a href="{% url 'export_transactions_pdf' %}" class="btn btn-outline-danger btn-sm w-50 fw-semibold">
+                    <i class="fa-solid fa-file-pdf me-1"></i> PDF
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Live Low Stock Audit Table -->
+<div class="card card-custom shadow-sm border-0">
+    <div class="card-header bg-white py-3 border-bottom">
+        <h6 class="fw-bold m-0 text-dark">
+            <i class="fa-solid fa-list-check me-2 text-primary"></i> Low & Out-of-Stock Live Audit Preview
+        </h6>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle m-0">
+            <thead class="bg-light">
+                <tr>
+                    <th>SKU</th>
+                    <th>Product Name</th>
+                    <th>Category</th>
+                    <th class="text-center">Current Qty</th>
+                    <th class="text-center">Min Threshold</th>
+                    <th class="text-center">Status</th>
+                    <th>Supplier</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for p in low_stock_products %}
+                <tr>
+                    <td><span class="badge bg-light text-dark border font-monospace">{{ p.sku }}</span></td>
+                    <td class="fw-bold text-dark">{{ p.name }}</td>
+                    <td class="small">{{ p.category.name }}</td>
+                    <td class="text-center fw-bold">{{ p.quantity }}</td>
+                    <td class="text-center text-muted">{{ p.min_stock_level }}</td>
+                    <td class="text-center">
+                        {% if p.stock_status == 'OUT_OF_STOCK' %}
+                            <span class="badge badge-status status-out-stock">Out of Stock</span>
+                        {% else %}
+                            <span class="badge badge-status status-low-stock">Low Stock</span>
+                        {% endif %}
+                    </td>
+                    <td class="small text-muted">{{ p.supplier.name|default:"Unassigned" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-success">
+                        <i class="fa-solid fa-circle-check fs-4 d-block mb-2"></i>
+                        No stock alerts at this time!
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

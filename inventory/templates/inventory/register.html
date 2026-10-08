@@ -1,0 +1,74 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Register New User - Stock Inventory Management{% endblock %}
+{% block page_heading %}User Registration{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12" style="max-width: 560px;">
+        <div class="card card-custom p-4 shadow-sm border-0">
+            <div class="d-flex align-items-center justify-content-between mb-4 border-bottom pb-3">
+                <div>
+                    <h5 class="fw-bold mb-1"><i class="fa-solid fa-user-plus text-primary me-2"></i> Register New Team Member</h5>
+                    <p class="text-muted small m-0">Create an account for a new admin or warehouse employee.</p>
+                </div>
+                <a href="{% url 'user_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back to User List
+                </a>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="row g-3 mb-4">
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">First Name</label>
+                        {{ form.first_name }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">Last Name</label>
+                        {{ form.last_name }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">Assign Role</label>
+                        {{ form.role }}
+                        {% if form.role.errors %}<div class="text-danger small mt-1">{{ form.role.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">Password</label>
+                        <div class="input-group">
+                            {{ form.password }}
+                            <button class="btn btn-outline-secondary border text-muted bg-white" type="button" onclick="const p = document.getElementById('id_password'); const i = this.querySelector('i'); if(p.type === 'password'){p.type='text'; i.classList.replace('fa-eye','fa-eye-slash');}else{p.type='password'; i.classList.replace('fa-eye-slash','fa-eye');}">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        {% if form.password.errors %}<div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-semibold small">Confirm Password</label>
+                        <div class="input-group">
+                            {{ form.confirm_password }}
+                            <button class="btn btn-outline-secondary border text-muted bg-white" type="button" onclick="const p = document.getElementById('id_confirm_password'); const i = this.querySelector('i'); if(p.type === 'password'){p.type='text'; i.classList.replace('fa-eye','fa-eye-slash');}else{p.type='password'; i.classList.replace('fa-eye-slash','fa-eye');}">
+                                <i class="fa-solid fa-eye"></i>
+                            </button>
+                        </div>
+                        {% if form.confirm_password.errors %}<div class="text-danger small mt-1">{{ form.confirm_password.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                    <a href="{% url 'user_list' %}" class="btn btn-light px-4">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4 fw-semibold">
+                        Register User
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

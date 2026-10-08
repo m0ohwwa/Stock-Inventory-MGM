@@ -1,0 +1,151 @@
+{% extends 'inventory/base.html' %}
+{% load currency_tags %}
+
+{% block title %}{{ product.name }} - Stock Inventory System{% endblock %}
+{% block page_heading %}Product Details{% endblock %}
+
+{% block content %}
+<div class="mb-3">
+    <a href="{% url 'product_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+        <i class="fa-solid fa-arrow-left me-1"></i> Back to Products Catalog
+    </a>
+</div>
+
+<div class="row g-4 mb-4">
+    <!-- Hero Info Card -->
+    <div class="col-lg-8">
+        <div class="card card-custom p-4 shadow-sm border-0 h-100">
+            <div class="d-flex flex-wrap align-items-start justify-content-between gap-3 mb-4 pb-3 border-bottom">
+                <div class="d-flex align-items-center gap-3">
+                    {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="rounded-3 border shadow-sm" style="width: 80px; height: 80px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-light text-muted rounded-3 d-flex align-items-center justify-content-center border" style="width: 80px; height: 80px;">
+                            <i class="fa-solid fa-image fs-2"></i>
+                        </div>
+                    {% endif %}
+                    <div>
+                        <h4 class="fw-bold m-0 text-dark">{{ product.name }}</h4>
+                        <div class="d-flex align-items-center gap-2 mt-1">
+                            <span class="badge bg-dark font-monospace">{{ product.sku }}</span>
+                            <span class="badge bg-light text-dark border">{{ product.category.name }}</span>
+                            {% if product.stock_status == 'IN_STOCK' %}
+                                <span class="badge badge-status status-in-stock">In Stock</span>
+                            {% elif product.stock_status == 'LOW_STOCK' %}
+                                <span class="badge badge-status status-low-stock">Low Stock Warning</span>
+                            {% else %}
+                                <span class="badge badge-status status-out-stock">Out of Stock</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="d-flex gap-2">
+                    <a href="{% url 'transaction_create' %}?product={{ product.id }}" class="btn btn-success fw-semibold">
+                        <i class="fa-solid fa-arrow-right-arrow-left me-1"></i> Adjust Stock
+                    </a>
+                    <a href="{% url 'product_update' product.pk %}" class="btn btn-outline-primary">
+                        <i class="fa-solid fa-pen"></i> Edit
+                    </a>
+                </div>
+            </div>
+
+            <div class="row g-3 mb-4">
+                <div class="col-sm-3">
+                    <div class="p-3 bg-light rounded border text-center">
+                        <span class="text-muted small">Price</span>
+                        <h5 class="fw-bold m-0 text-dark">{% currency product.price %}</h5>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="p-3 bg-light rounded border text-center">
+                        <span class="text-muted small">Current Quantity</span>
+                        <h5 class="fw-bold m-0 text-primary">{{ product.quantity }} units</h5>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="p-3 bg-light rounded border text-center">
+                        <span class="text-muted small">Total Valuation</span>
+                        <h5 class="fw-bold m-0 text-success">{% currency product.total_value %}</h5>
+                    </div>
+                </div>
+                <div class="col-sm-3">
+                    <div class="p-3 bg-light rounded border text-center">
+                        <span class="text-muted small">Min Stock Threshold</span>
+                        <h5 class="fw-bold m-0 text-warning">{{ product.min_stock_level }} units</h5>
+                    </div>
+                </div>
+            </div>
+
+            <h6 class="fw-bold mb-2">Description</h6>
+            <p class="text-muted small mb-4">{{ product.description|default:"No detailed product description provided." }}</p>
+
+            <div class="row g-2 text-muted small border-top pt-3">
+                <div class="col-sm-6">
+                    <i class="fa-solid fa-truck-field me-1 text-primary"></i> <strong>Supplier:</strong> {{ product.supplier.name|default:"Unassigned" }}
+                </div>
+                <div class="col-sm-6">
+                    <i class="fa-solid fa-calendar me-1 text-primary"></i> <strong>Date Cataloged:</strong> {{ product.date_added|date:"F d, Y" }}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Supplier & Summary Side Card -->
+    <div class="col-lg-4">
+        <div class="card card-custom p-4 shadow-sm border-0 mb-4">
+            <h6 class="fw-bold mb-3 border-bottom pb-2"><i class="fa-solid fa-building-user text-primary me-2"></i> Supplier Information</h6>
+            {% if product.supplier %}
+                <div class="fw-bold text-dark fs-6 mb-2">{{ product.supplier.name }}</div>
+                <div class="small text-muted mb-1"><i class="fa-solid fa-phone me-2"></i> {{ product.supplier.phone }}</div>
+                <div class="small text-muted mb-2"><i class="fa-solid fa-envelope me-2"></i> {{ product.supplier.email }}</div>
+                <div class="small text-muted bg-light p-2 rounded border"><i class="fa-solid fa-location-dot me-1"></i> {{ product.supplier.address }}</div>
+            {% else %}
+                <p class="text-muted small m-0">No supplier assigned to this product.</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Product Specific Stock Movement Log -->
+<div class="card card-custom shadow-sm border-0">
+    <div class="card-header bg-white py-3 border-bottom d-flex align-items-center justify-content-between">
+        <h6 class="fw-bold m-0"><i class="fa-solid fa-history text-primary me-2"></i> Stock Movement History for {{ product.name }}</h6>
+        <a href="{% url 'transaction_create' %}?product={{ product.id }}" class="btn btn-sm btn-success">Record Movement</a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-hover align-middle m-0">
+            <thead class="bg-light">
+                <tr>
+                    <th>Date & Time</th>
+                    <th class="text-center">Movement Type</th>
+                    <th class="text-center">Quantity</th>
+                    <th>User</th>
+                    <th>Reference / Notes</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr>
+                    <td class="small text-muted">{{ t.timestamp|date:"Y-m-d H:i" }}</td>
+                    <td class="text-center">
+                        {% if t.transaction_type == 'IN' %}
+                            <span class="badge badge-status status-in"><i class="fa-solid fa-arrow-down me-1"></i> Stock In</span>
+                        {% else %}
+                            <span class="badge badge-status status-out"><i class="fa-solid fa-arrow-up me-1"></i> Stock Out</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-center fw-bold">{{ t.quantity }}</td>
+                    <td class="small">{{ t.user.username|default:"System" }}</td>
+                    <td class="small text-muted">{{ t.notes|default:"-" }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">No stock movement logs recorded for this product yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

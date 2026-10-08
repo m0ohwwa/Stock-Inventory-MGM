@@ -1,0 +1,22 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}System Controls - Stock Inventory Management System{% endblock %}
+{% block page_heading %}System Controls{% endblock %}
+
+{% block content %}
+<div class="card card-custom border-0 shadow-sm">
+    <div class="card-body p-4">
+        <h5 class="fw-bold mb-1" data-en="System Controls" data-kh="ការគ្រប់គ្រងប្រព័ន្ធ">
+            <i class="fa-solid fa-sliders me-2 text-secondary"></i>System Controls
+        </h5>
+        <p class="text-muted small mb-4" data-en="Manage system data — reset all inventory records." data-kh="គ្រប់គ្រងទិន្នន័យប្រព័ន្ធ — កំណត់ត្រាស្តុករទាំងអស់ឡើងVិញ។">Manage system data — reset all inventory records.</p>
+        <div class="d-flex flex-wrap gap-3">
+            <a href="{% url 'reset_demo_data' %}" class="btn btn-sm btn-outline-danger fw-semibold px-3"
+               onclick="return confirm('Are you sure you want to reset all inventory data? This will clear products, categories, suppliers, and transactions.');">
+                <i class="fa-solid fa-trash-arrow-up me-2"></i>
+                <span data-en="Reset System" data-kh="កំណត់ទិន្នន័យប្រព័ន្ធឡើងVិញ">Reset System</span>
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

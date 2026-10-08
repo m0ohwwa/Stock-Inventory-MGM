@@ -1,0 +1,230 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}My Profile - Stock Inventory Management System{% endblock %}
+{% block page_heading %}Edit Profile{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card card-custom p-4 shadow-sm border-0">
+            <form method="post" enctype="multipart/form-data" novalidate>
+                {% csrf_token %}
+                <div class="row g-3">
+                    <div class="col-12 text-center mb-3">
+                        <label for="avatarInput" class="form-label fw-semibold small d-block">Profile Photo</label>
+                        <div class="position-relative d-inline-block avatar-crop-frame" id="avatarCropFrame">
+                            {% if user.profile.avatar %}
+                                <img src="{{ user.profile.avatar.url }}" alt="Drag the photo to reposition it" class="rounded-circle shadow-sm mb-2 object-fit-cover avatar-reposition" style="object-position: {{ user.profile.avatar_position_x }}% {{ user.profile.avatar_position_y }}%;" width="100" height="100" id="avatarPreview" tabindex="0">
+                            {% else %}
+                                <div class="avatar-circle rounded-circle shadow-sm mb-2 mx-auto" style="width:100px;height:100px;font-size:2.5rem;display:flex;align-items:center;justify-content:center;background-color:var(--primary-color);color:white;" id="avatarPreviewFallback">
+                                    {{ user.get_full_name|default:user.email|default:"U"|slice:":1"|upper }}
+                                </div>
+                                <img src="" alt="Drag the photo to reposition it" class="rounded-circle shadow-sm mb-2 object-fit-cover avatar-reposition d-none" style="object-position: 50% 50%;" width="100" height="100" id="avatarPreview" tabindex="0">
+                            {% endif %}
+                            <div class="avatar-crop-grid" aria-hidden="true"></div>
+                        </div>
+                        <p class="small text-muted mb-0">Drag it to adjust the framing.</p>
+                        {{ position_form.avatar_position_x }}
+                        {{ position_form.avatar_position_y }}
+                        {% for error in position_form.non_field_errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                        {% for error in position_form.avatar_position_x.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                        {% for error in position_form.avatar_position_y.errors %}
+                            <div class="text-danger small mt-1">{{ error }}</div>
+                        {% endfor %}
+                        <div class="mt-2">
+                            <label for="avatarInput" class="btn btn-sm btn-outline-primary rounded-pill px-3 fw-semibold">
+                                <i class="fa-solid fa-camera me-1"></i> Change Photo
+                            </label>
+                            <input type="file" name="avatar" id="avatarInput" class="d-none" accept="image/*">
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <label for="{{ form.email.id_for_label }}" class="form-label fw-semibold small">Email Address</label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<div class="text-danger small mt-1">{{ form.email.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label for="{{ form.first_name.id_for_label }}" class="form-label fw-semibold small">First Name</label>
+                        {{ form.first_name }}
+                        {% if form.first_name.errors %}<div class="text-danger small mt-1">{{ form.first_name.errors.0 }}</div>{% endif %}
+                    </div>
+                    <div class="col-12">
+                        <label for="{{ form.last_name.id_for_label }}" class="form-label fw-semibold small">Last Name</label>
+                        {{ form.last_name }}
+                        {% if form.last_name.errors %}<div class="text-danger small mt-1">{{ form.last_name.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+                {% if form.non_field_errors %}<div class="text-danger small mt-3">{{ form.non_field_errors.0 }}</div>{% endif %}
+                <div class="d-flex justify-content-end align-items-center gap-2 border-top pt-3 mt-4">
+                    <a href="{% url 'account_profile' %}" class="btn btn-outline-secondary px-4 fw-semibold">
+                        <span data-en="Cancel" data-kh="បោះបង់">Cancel</span>
+                    </a>
+                    <button type="submit" class="btn btn-primary px-4 fw-semibold">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    .avatar-reposition {
+        cursor: grab;
+        touch-action: none;
+        user-select: none;
+    }
+
+    .avatar-crop-frame {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        overflow: hidden;
+        vertical-align: middle;
+    }
+
+    .avatar-crop-frame > img,
+    .avatar-crop-frame > .avatar-circle {
+        display: block;
+        margin: 0 !important;
+    }
+
+    .avatar-crop-grid {
+        position: absolute;
+        inset: 0;
+        border-radius: 50%;
+        pointer-events: none;
+        opacity: 0;
+        transition: opacity 120ms ease;
+        background-image:
+            linear-gradient(to right, transparent calc(33.333% - 0.5px), rgba(255, 255, 255, 0.85) 33.333%, transparent calc(33.333% + 0.5px)),
+            linear-gradient(to right, transparent calc(66.666% - 0.5px), rgba(255, 255, 255, 0.85) 66.666%, transparent calc(66.666% + 0.5px)),
+            linear-gradient(to bottom, transparent calc(33.333% - 0.5px), rgba(255, 255, 255, 0.85) 33.333%, transparent calc(33.333% + 0.5px)),
+            linear-gradient(to bottom, transparent calc(66.666% - 0.5px), rgba(255, 255, 255, 0.85) 66.666%, transparent calc(66.666% + 0.5px));
+    }
+
+    .avatar-crop-frame.is-framing .avatar-crop-grid {
+        opacity: 1;
+    }
+
+    .avatar-reposition:active {
+        cursor: grabbing;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const avatarInput = document.getElementById('avatarInput');
+        const avatarPreview = document.getElementById('avatarPreview');
+        const avatarFallback = document.getElementById('avatarPreviewFallback');
+        const avatarCropFrame = document.getElementById('avatarCropFrame');
+        const positionX = document.getElementById('id_avatar_position_x');
+        const positionY = document.getElementById('id_avatar_position_y');
+        let dragStart = null;
+
+        function setPosition(x, y) {
+            const clampedX = Math.max(0, Math.min(100, x));
+            const clampedY = Math.max(0, Math.min(100, y));
+            positionX.value = Math.round(clampedX);
+            positionY.value = Math.round(clampedY);
+            avatarPreview.style.objectPosition = `${clampedX}% ${clampedY}%`;
+        }
+
+        if (avatarInput && avatarPreview && positionX && positionY) {
+            avatarInput.addEventListener('change', function() {
+                const file = avatarInput.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.addEventListener('load', function() {
+                    avatarPreview.src = reader.result;
+                    avatarPreview.classList.remove('d-none');
+                    if (avatarFallback) avatarFallback.classList.add('d-none');
+                    setPosition(50, 50);
+                });
+                reader.readAsDataURL(file);
+            });
+
+            avatarPreview.addEventListener('pointerdown', function(event) {
+                if (avatarPreview.classList.contains('d-none') || !avatarPreview.naturalWidth) return;
+                event.preventDefault();
+                avatarPreview.setPointerCapture(event.pointerId);
+                avatarCropFrame.classList.add('is-framing');
+                dragStart = {
+                    pointerId: event.pointerId,
+                    x: event.clientX,
+                    y: event.clientY,
+                    positionX: Number(positionX.value),
+                    positionY: Number(positionY.value),
+                };
+            });
+
+            avatarPreview.addEventListener('pointermove', function(event) {
+                if (!dragStart || dragStart.pointerId !== event.pointerId) return;
+                const rect = avatarPreview.getBoundingClientRect();
+                const scale = Math.max(
+                    rect.width / avatarPreview.naturalWidth,
+                    rect.height / avatarPreview.naturalHeight
+                );
+                const renderedWidth = avatarPreview.naturalWidth * scale;
+                const renderedHeight = avatarPreview.naturalHeight * scale;
+                const overflowX = renderedWidth - rect.width;
+                const overflowY = renderedHeight - rect.height;
+                const nextX = overflowX
+                    ? dragStart.positionX - ((event.clientX - dragStart.x) / overflowX) * 100
+                    : dragStart.positionX;
+                const nextY = overflowY
+                    ? dragStart.positionY - ((event.clientY - dragStart.y) / overflowY) * 100
+                    : dragStart.positionY;
+                setPosition(nextX, nextY);
+            });
+
+            avatarPreview.addEventListener('pointerup', function() {
+                dragStart = null;
+                avatarCropFrame.classList.remove('is-framing');
+            });
+            avatarPreview.addEventListener('pointercancel', function() {
+                dragStart = null;
+                avatarCropFrame.classList.remove('is-framing');
+            });
+
+            avatarPreview.addEventListener('keydown', function(event) {
+                const step = event.shiftKey ? 10 : 2;
+                const deltas = {
+                    ArrowLeft: [-step, 0],
+                    ArrowRight: [step, 0],
+                    ArrowUp: [0, -step],
+                    ArrowDown: [0, step],
+                };
+                if (!deltas[event.key]) return;
+                event.preventDefault();
+                setPosition(
+                    Number(positionX.value) + deltas[event.key][0],
+                    Number(positionY.value) + deltas[event.key][1]
+                );
+            });
+        }
+
+        const firstNameInput = document.getElementById('id_first_name');
+        const lastNameInput = document.getElementById('id_last_name');
+        const sidebarName = document.getElementById('sidebarUserName');
+
+        function updateSidebarName() {
+            if (!sidebarName) return;
+            const firstName = firstNameInput ? firstNameInput.value.trim() : '';
+            const lastName = lastNameInput ? lastNameInput.value.trim() : '';
+            const fullName = `${firstName} ${lastName}`.trim();
+            sidebarName.textContent = fullName || 'User';
+        }
+
+        if (firstNameInput) firstNameInput.addEventListener('input', updateSidebarName);
+        if (lastNameInput) lastNameInput.addEventListener('input', updateSidebarName);
+    });
+</script>
+{% endblock %}

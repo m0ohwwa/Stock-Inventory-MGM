@@ -1,0 +1,13 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Awaiting Approval - Stock Inventory System{% endblock %}
+{% block content %}
+<div class="container py-5">
+    <div class="card card-custom shadow-sm border-0 mx-auto text-center p-4" style="max-width: 560px;">
+        <div class="text-warning fs-1 mb-3"><i class="fa-solid fa-hourglass-half" aria-hidden="true"></i></div>
+        <h2 class="fw-bold" data-en="Account awaiting approval" data-kh="គណនីកំពុងរង់ចាំការអនុម័ត">Account awaiting approval</h2>
+        <p class="text-muted mb-4" data-en="Your email has been verified. An administrator must approve your account before you can sign in." data-kh="អ៊ីមែលរបស់អ្នកត្រូវបានផ្ទៀងផ្ទាត់ហើយ។ អ្នកគ្រប់គ្រងត្រូវអនុម័តគណនីរបស់អ្នក មុនពេលអ្នកអាចចូលបាន។">Your email has been verified. An administrator must approve your account before you can sign in.</p>
+        <a class="btn btn-primary rounded-pill px-4 mx-auto" href="{% url 'login' %}" data-en="Go to sign in" data-kh="ទៅកាន់ការចូលប្រើ">Go to sign in</a>
+    </div>
+</div>
+{% endblock %}

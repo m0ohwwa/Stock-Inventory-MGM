@@ -1,0 +1,57 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Sign In - Stock Inventory Management System{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="col-12" style="max-width: 560px;">
+
+
+        <div class="card card-custom p-4 shadow-sm border-0 w-100">
+            <h5 class="fw-bold mb-3 text-center">Sign In</h5>
+            
+            <form method="post" novalidate>
+                {% csrf_token %}
+                {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}">
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label class="form-label text-secondary small fw-semibold">Email Address</label>
+                    <div class="input-group">
+                        {{ form.username }}
+                    </div>
+                    {% if form.username.errors %}
+                        <div class="text-danger small mt-1">{{ form.username.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label text-secondary small fw-semibold">Password</label>
+                    <div class="input-group">
+                        {{ form.password }}
+                        <button class="btn btn-outline-secondary border text-muted bg-white" type="button" onclick="const p = document.getElementById('id_password'); const i = this.querySelector('i'); if(p.type === 'password'){p.type='text'; i.classList.replace('fa-eye','fa-eye-slash');}else{p.type='password'; i.classList.replace('fa-eye-slash','fa-eye');}">
+                            <i class="fa-solid fa-eye"></i>
+                        </button>
+                    </div>
+                    <div class="mt-2">
+                        <a href="{% url 'forgot_password' %}" class="small text-decoration-none fw-semibold">Forgot password?</a>
+                    </div>
+                    {% if form.password.errors %}
+                        <div class="text-danger small mt-1">{{ form.password.errors.0 }}</div>
+                    {% endif %}
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold rounded-3 shadow-sm">
+                    Login
+                </button>
+            </form>
+
+            <div class="text-center border-top pt-3 text-muted small mt-3">
+                Don't have an account? <a href="{% url 'signup' %}" class="fw-bold text-primary text-decoration-none">Sign Up</a>
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock %}

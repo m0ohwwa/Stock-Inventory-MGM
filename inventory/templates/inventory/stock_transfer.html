@@ -1,0 +1,86 @@
+{% extends 'inventory/base.html' %}
+{% block title %}Stock Transfer - Stock Inventory System{% endblock %}
+{% block page_heading %}Stock Transfer{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-9 col-lg-8">
+        <div class="card card-custom p-4 shadow-sm border-0">
+            <div class="d-flex align-items-center justify-content-between border-bottom pb-3 mb-4">
+                <h5 class="fw-bold m-0">
+                    <i class="fa-solid fa-shuffle text-primary me-2"></i>
+                    <span data-en="Transfer Stock Between Products" data-kh="ផ្ទេរស្តុករវាងផលិតផល">Transfer Stock Between Products</span>
+                </h5>
+                <a href="{% url 'transaction_list' %}" class="btn btn-outline-secondary btn-sm rounded-pill px-3">
+                    <i class="fa-solid fa-arrow-left me-1"></i>
+                    <span data-en="Stock History" data-kh="ប្រវត្តិស្តុក">Stock History</span>
+                </a>
+            </div>
+
+            <p class="text-muted small mb-4" data-en="Remove stock from one product and add it to another in a single atomic operation." data-kh="ដកស្តុកពីផលិតផលមួយ ហើយបន្ថែមទៅផលិតផលមួយទៀតក្នុងប្រតិបត្តិការតែមួយ។">
+                Remove stock from one product and add it to another in a single atomic operation.
+            </p>
+
+            <form method="post">
+                {% csrf_token %}
+
+                <!-- Transfer From -->
+                <div class="card border-0 bg-light rounded-3 p-3 mb-3">
+                    <h6 class="fw-bold text-danger mb-3">
+                        <i class="fa-solid fa-circle-arrow-up me-2"></i>
+                        <span data-en="Transfer FROM" data-kh="ផ្ទេរចេញពី">Transfer FROM</span>
+                    </h6>
+                    <div class="row g-3">
+                        <div class="col-md-8">
+                            <label class="form-label fw-semibold small" data-en="Source Product" data-kh="ផលិតផលប្រភព">Source Product</label>
+                            {{ form.from_product }}
+                            {% if form.from_product.errors %}<div class="text-danger small mt-1">{{ form.from_product.errors.0 }}</div>{% endif %}
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold small" data-en="Quantity" data-kh="បរិមាណ">Quantity</label>
+                            {{ form.quantity }}
+                            {% if form.quantity.errors %}<div class="text-danger small mt-1">{{ form.quantity.errors.0 }}</div>{% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Arrow indicator -->
+                <div class="text-center my-2">
+                    <i class="fa-solid fa-arrow-down fs-4 text-primary"></i>
+                </div>
+
+                <!-- Transfer To -->
+                <div class="card border-0 bg-light rounded-3 p-3 mb-4">
+                    <h6 class="fw-bold text-success mb-3">
+                        <i class="fa-solid fa-circle-arrow-down me-2"></i>
+                        <span data-en="Transfer TO" data-kh="ផ្ទេរចូលទៅ">Transfer TO</span>
+                    </h6>
+                    <div class="mb-0">
+                        <label class="form-label fw-semibold small" data-en="Destination Product" data-kh="ផលិតផលគោលដៅ">Destination Product</label>
+                        {{ form.to_product }}
+                        {% if form.to_product.errors %}<div class="text-danger small mt-1">{{ form.to_product.errors.0 }}</div>{% endif %}
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="mb-4">
+                    <label class="form-label fw-semibold small" data-en="Notes / Reference (Optional)" data-kh="កំណត់ចំណាំ / យោង (ស្រេចចិត្ត)">Notes / Reference (Optional)</label>
+                    {{ form.notes }}
+                </div>
+
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger small">{{ form.non_field_errors }}</div>
+                {% endif %}
+
+                <div class="d-flex justify-content-end gap-2 border-top pt-3">
+                    <a href="{% url 'transaction_list' %}" class="btn btn-light px-4" data-en="Cancel" data-kh="បោះបង់">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4 fw-semibold shadow-sm">
+                        <i class="fa-solid fa-shuffle me-1"></i>
+                        <span data-en="Execute Transfer" data-kh="អនុវត្តការផ្ទេរ">Execute Transfer</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

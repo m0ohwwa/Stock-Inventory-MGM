@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Stock Inventory Management{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <!-- Custom CSS -->
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --primary-color: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg-main: #f8fafc;
+            --sidebar-bg: #0f172a;
+            --sidebar-hover: #1e293b;
+            --card-border-radius: 12px;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-main);
+            color: #334155;
+            overflow-x: hidden;
+        }
+
+        .form-control::placeholder,
+        input::placeholder,
+        textarea::placeholder {
+            color: #111827;
+            opacity: 1;
+        }
+
+        html[lang="km"] body,
+        html[lang="km"] body button,
+        html[lang="km"] body input,
+        html[lang="km"] body select,
+        html[lang="km"] body textarea {
+            font-family: 'Khmer OS Battambang', 'Battambang', sans-serif;
+        }
+
+        /* ── Sidebar ───────────────────────────────────── */
+        #sidebar {
+            width: var(--sidebar-width);
+            height: 100vh;
+            position: fixed;
+            top: 0;
+            left: 0;
+            background: #0d1117;
+            color: #8b949e;
+            transition: margin-left 0.3s ease;
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            border-right: 1px solid rgba(255,255,255,0.06);
+        }
+
+        /* Brand / Logo */
+        #sidebar .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 1.25rem 1.25rem 1rem;
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+            text-decoration: none;
+        }
+        #sidebar .sidebar-brand .brand-icon {
+            width: 34px;
+            height: 34px;
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            color: #fff;
+            flex-shrink: 0;
+        }
+        #sidebar .sidebar-brand .brand-text {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #e2e8f0;
+            line-height: 1.2;
+        }
+        #sidebar .sidebar-brand .brand-sub {
+            font-size: 0.68rem;
+            color: #475569;
+            font-weight: 400;
+        }
+
+        /* Scrollable nav area */
+        #sidebar .nav-menu {
+            padding: 0.5rem 0.6rem;
+            list-style: none;
+            margin: 0;
+            flex-grow: 1;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: rgba(255,255,255,0.08) transparent;
+        }
+        #sidebar .nav-menu::-webkit-scrollbar { width: 4px; }
+        #sidebar .nav-menu::-webkit-scrollbar-track { background: transparent; }
+        #sidebar .nav-menu::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+        #sidebar .nav-item { margin-bottom: 1px; }
+
+        /* Section group labels */
+        #sidebar .nav-group-label {
+            font-size: 0.62rem;
+            font-weight: 700;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            color: #334155;
+            padding: 1.1rem 0.75rem 0.3rem;
+            display: block;
+            user-select: none;
+        }
+
+        /* Nav links */
+        #sidebar .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 0.6rem 0.85rem;
+            color: #94a3b8;
+            border-radius: 7px;
+            font-weight: 500;
+            font-size: 0.88rem;
+            transition: all 0.18s ease;
+            text-decoration: none;
+            position: relative;
+        }
+        #sidebar .nav-link:hover {
+            color: #cbd5e1;
+            background: rgba(255,255,255,0.05);
+        }
+        #sidebar .nav-link.active {
+            color: #fff;
+            background: rgba(99,102,241,0.15);
+            font-weight: 600;
+        }
+        #sidebar .nav-link.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 20%;
+            height: 60%;
+            width: 3px;
+            background: #6366f1;
+            border-radius: 0 3px 3px 0;
+        }
+        #sidebar .nav-link i {
+            width: 18px;
+            text-align: center;
+            font-size: 0.95rem;
+            opacity: 0.85;
+            flex-shrink: 0;
+        }
+        #sidebar .nav-link.active i { opacity: 1; color: #818cf8; }
+
+        /* Logout */
+        #sidebar .nav-link-logout {
+            display: flex;
+            align-items: center;
+            gap: 11px;
+            padding: 0.6rem 0.85rem;
+            color: #f87171;
+            border-radius: 7px;
+            font-weight: 500;
+            font-size: 0.88rem;
+            transition: all 0.18s ease;
+            text-decoration: none;
+        }
+        #sidebar .nav-link-logout:hover {
+            color: #fca5a5;
+            background: rgba(239,68,68,0.1);
+        }
+        #sidebar .nav-link-logout i {
+            width: 18px;
+            text-align: center;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+
+        /* Sidebar footer */
+        #sidebar .sidebar-footer {
+            padding: 0.6rem;
+            border-top: 1px solid rgba(255,255,255,0.07);
+        }
+
+        /* Main Content Wrapper */
+        #content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.3s ease;
+        }
+
+        /* Header Navbar */
+        .top-navbar {
+            background-color: #ffffff;
+            height: 70px;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            z-index: 999;
+        }
+
+        .user-pill {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 6px 14px;
+            background-color: #f1f5f9;
+            border-radius: 50px;
+        }
+
+        .avatar-circle {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: var(--primary-color);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .badge-role {
+            font-size: 0.7rem;
+            padding: 3px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .badge-admin {
+            background-color: #fee2e2;
+            color: #b91c1c;
+        }
+
+        #sidebar .badge-role {
+            font-size: 0.35rem;
+            padding: 1.5px 4px;
+        }
+
+        .badge-staff {
+            background-color: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .badge-manager {
+            background-color: #dcfce7;
+            color: #15803d;
+        }
+
+        .badge-current-account {
+            background-color: #dcfce7;
+            color: #15803d;
+            border: 1px solid #bbf7d0;
+        }
+
+        /* Cards & Components */
+        .stat-card {
+            background: #ffffff;
+            border-radius: var(--card-border-radius);
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.03);
+            border: 1px solid #f1f5f9;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.08);
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.4rem;
+        }
+
+        .card-custom {
+            background: #ffffff;
+            border-radius: var(--card-border-radius);
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        /* Status Badges */
+        .badge-status {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .status-in-stock { background-color: #dcfce7; color: #166534; }
+        .status-low-stock { background-color: #fef9c3; color: #854d0e; }
+        .status-out-stock { background-color: #fee2e2; color: #991b1b; }
+
+        .status-in { background-color: #dbeafe; color: #1e40af; }
+        .status-out { background-color: #ffedd5; color: #9a3412; }
+
+        .table > :not(caption) > * > * {
+            padding: 0.9rem 1rem;
+            vertical-align: middle;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.75rem;
+        }
+
+        @media (max-width: 991.98px) {
+            #sidebar { margin-left: -260px; }
+            #sidebar.active { margin-left: 0; }
+            #content { margin-left: 0; }
+        }
+
+        /* Language Toggle Switch */
+        .lang-toggle {
+            display: flex;
+            align-items: center;
+            background: #f1f5f9;
+            border-radius: 50px;
+            padding: 3px;
+            gap: 2px;
+            border: 1px solid #e2e8f0;
+        }
+        .lang-toggle button {
+            border: none;
+            background: transparent;
+            border-radius: 50px;
+            padding: 4px 13px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            letter-spacing: 0.05em;
+        }
+        .lang-toggle button.active {
+            background: var(--primary-color);
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(79,70,229,0.35);
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    {% if user.is_authenticated %}
+    <!-- Sidebar Navigation -->
+    <nav id="sidebar">
+
+        <!-- User Info -->
+        <div class="px-3 py-2 d-block" style="border-bottom:1px solid rgba(255,255,255,0.06);">
+            <div class="d-flex align-items-center gap-3">
+                {% if user.profile.avatar %}
+                    <img src="{{ user.profile.avatar.url }}" alt="Avatar" class="rounded-circle object-fit-cover" style="width:36px;height:36px;flex-shrink:0;object-position:{{ user.profile.avatar_position_x }}% {{ user.profile.avatar_position_y }}%;">
+                {% else %}
+                    <div class="avatar-circle" style="width:36px;height:36px;font-size:0.9rem;flex-shrink:0;">
+                        {{ user.username|slice:":1"|upper }}
+                    </div>
+                {% endif %}
+                <div class="lh-1">
+                    <span class="badge-role d-inline-block mb-1 {% if user.is_superuser or user.profile.is_admin %}badge-admin{% elif user.profile.role == 'MANAGER' %}badge-manager{% else %}badge-staff{% endif %}">
+                        {{ user.profile.get_role_display|default:"Employee" }}
+                    </span>
+                    <span class="d-block" style="font-size:0.95rem;font-weight:600;color:#e2e8f0;line-height:1.3;">{{ user.get_full_name|default:user.username }}</span>
+                </div>
+            </div>
+        </div>
+
+        <ul class="nav-menu">
+
+            <!-- MAIN -->
+            <li><span class="nav-group-label" data-en="MAIN" data-kh="មេ">MAIN</span></li>
+            <li class="nav-item">
+                <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-table-columns"></i>
+                    <span data-en="Dashboard" data-kh="ផ្ទាំងគ្រប់គ្រង">Dashboard</span>
+                </a>
+            </li>
+
+            <!-- INVENTORY -->
+            <li><span class="nav-group-label" data-en="INVENTORY" data-kh="សារពើភ័ណ្ឌ">INVENTORY</span></li>
+            <li class="nav-item">
+                <a href="{% url 'product_list' %}" class="nav-link {% if 'product' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fa-solid fa-box"></i>
+                    <span data-en="Products" data-kh="ផលិតផល">Products</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'category_list' %}" class="nav-link {% if 'category' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fa-solid fa-tag"></i>
+                    <span data-en="Categories" data-kh="ប្រភេទ">Categories</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'supplier_list' %}" class="nav-link {% if 'supplier' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fa-solid fa-truck"></i>
+                    <span data-en="Suppliers" data-kh="អ្នកផ្គត់ផ្គង់">Suppliers</span>
+                </a>
+            </li>
+
+            <!-- TRANSACTIONS -->
+            <li><span class="nav-group-label" data-en="TRANSACTIONS" data-kh="ប្រតិបត្តិការ">TRANSACTIONS</span></li>
+            <li class="nav-item">
+                <a href="{% url 'stock_in' %}" class="nav-link {% if request.resolver_match.url_name == 'stock_in' %}active{% endif %}">
+                    <i class="fa-solid fa-circle-arrow-down"></i>
+                    <span data-en="Stock In" data-kh="ស្តុកចូល">Stock In</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'stock_out' %}" class="nav-link {% if request.resolver_match.url_name == 'stock_out' %}active{% endif %}">
+                    <i class="fa-solid fa-circle-arrow-up"></i>
+                    <span data-en="Stock Out" data-kh="ស្តុកចេញ">Stock Out</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'transaction_list' %}" class="nav-link {% if request.resolver_match.url_name == 'transaction_list' %}active{% endif %}">
+                    <i class="fa-solid fa-clock-rotate-left"></i>
+                    <span data-en="Stock History" data-kh="ប្រវត្តិស្តុក">Stock History</span>
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="{% url 'stock_transfer' %}" class="nav-link {% if request.resolver_match.url_name == 'stock_transfer' %}active{% endif %}">
+                    <i class="fa-solid fa-shuffle"></i>
+                    <span data-en="Stock Transfer" data-kh="ផ្ទេរស្តុក">Stock Transfer</span>
+                </a>
+            </li>
+
+            <!-- ANALYTICS -->
+            {% if user.profile.role == 'ADMIN' or user.profile.role == 'MANAGER' %}
+            <li><span class="nav-group-label" data-en="ANALYTICS" data-kh="វិភាគ">ANALYTICS</span></li>
+            <li class="nav-item">
+                <a href="{% url 'reports_dashboard' %}" class="nav-link {% if 'report' in request.resolver_match.url_name %}active{% endif %}">
+                    <i class="fa-solid fa-chart-bar"></i>
+                    <span data-en="Reports" data-kh="របាយការណ៍">Reports</span>
+                </a>
+            </li>
+            {% endif %}
+
+            {% if user.is_superuser or user.profile.is_admin %}
+            <li class="nav-item">
+                <a href="{% url 'settings' %}" class="nav-link {% if 'settings' in request.path %}active{% endif %}">
+                    <i class="fa-solid fa-gear"></i>
+                    <span data-en="Settings" data-kh="ការកំណត់">Settings</span>
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+
+        <!-- Logout at bottom -->
+        <div class="sidebar-footer">
+            <a href="{% url 'logout' %}" class="nav-link-logout">
+                <i class="fa-solid fa-right-from-bracket"></i>
+                <span data-en="Logout" data-kh="ចាកចេញ">Logout</span>
+            </a>
+        </div>
+
+    </nav>
+    {% endif %}
+
+    <!-- Main Content Area -->
+    <div id="content" {% if not user.is_authenticated %}style="margin-left: 0;"{% endif %}>
+        {% if user.is_authenticated %}
+        <!-- Top Navbar -->
+        <header class="top-navbar">
+            <div class="d-flex align-items-center gap-3">
+                <button class="btn btn-light d-lg-none" id="sidebarToggle">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+                <h5 class="m-0 fw-bold text-dark">{% block page_heading %}Inventory Dashboard{% endblock %}</h5>
+            </div>
+            <!-- EN/KH Language Toggle (visible on dashboard only, but lang applies everywhere) -->
+            {% if request.resolver_match.url_name == 'dashboard_admin' or request.resolver_match.url_name == 'dashboard_manager' or request.resolver_match.url_name == 'dashboard_staff' or request.resolver_match.url_name == 'dashboard' %}
+            <div class="lang-toggle">
+                <button id="btnEN" class="active" onclick="setLang('en')">EN</button>
+                <button id="btnKH" onclick="setLang('kh')">KH</button>
+            </div>
+            {% endif %}
+        </header>
+        {% endif %}
+
+        <!-- Container Body -->
+        <main class="p-4 flex-grow-1">
+            <!-- Messages Toast/Alerts -->
+            {% if messages %}
+                {% for message in messages %}
+                <div class="alert alert-{{ message.tags }} alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
+                    <i class="fa-solid {% if message.tags == 'success' %}fa-circle-check text-success{% elif message.tags == 'error' %}fa-circle-exclamation text-danger{% else %}fa-circle-info text-info{% endif %} me-2 fs-5"></i>
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+                {% endfor %}
+            {% endif %}
+
+            {% block content %}{% endblock %}
+        </main>
+
+        {% if request.resolver_match.url_name == 'dashboard_admin' or request.resolver_match.url_name == 'dashboard_manager' or request.resolver_match.url_name == 'dashboard_staff' %}
+            <footer class="bg-white border-top py-3 text-center text-muted small mt-auto">
+                <div class="container-fluid">
+                    Stock Inventory Management System &copy; {% now "Y" %} | Modern Enterprise Dashboard
+                </div>
+            </footer>
+        {% endif %}
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const sidebarToggle = document.getElementById('sidebarToggle');
+            const sidebar = document.getElementById('sidebar');
+            if(sidebarToggle && sidebar) {
+                sidebarToggle.addEventListener('click', function() {
+                    sidebar.classList.toggle('active');
+                });
+            }
+            document.querySelectorAll('[data-password-toggle]').forEach(function(checkbox) {
+                checkbox.addEventListener('change', function() {
+                    const passwordInputIds = checkbox.getAttribute('aria-controls').split(/\s+/);
+                    passwordInputIds.forEach(function(inputId) {
+                        const passwordInput = document.getElementById(inputId);
+                        if (passwordInput) {
+                            passwordInput.type = checkbox.checked ? 'text' : 'password';
+                        }
+                    });
+                });
+            });
+            // Apply saved language on every page load (buttons may be hidden on non-dashboard pages)
+            const savedLang = localStorage.getItem('siteLang') || 'en';
+            applyLang(savedLang);
+        });
+
+        function setLang(lang) {
+            localStorage.setItem('siteLang', lang);
+            applyLang(lang);
+        }
+
+        function applyLang(lang) {
+            document.querySelectorAll('[data-en]').forEach(function(el) {
+                el.textContent = el.getAttribute('data-' + lang) || el.getAttribute('data-en');
+            });
+            document.documentElement.lang = lang === 'kh' ? 'km' : 'en';
+            translatePage(lang);
+            var btnEN = document.getElementById('btnEN');
+            var btnKH = document.getElementById('btnKH');
+            if (btnEN && btnKH) {
+                btnEN.classList.toggle('active', lang === 'en');
+                btnKH.classList.toggle('active', lang === 'kh');
+            }
+        }
+
+        const khmerTranslations = {
+            'Dashboard': 'ផ្ទាំងគ្រប់គ្រង',
+            'Products': 'ផលិតផល', 'Product': 'ផលិតផល',
+            'Product Inventory Catalog': 'កាតាឡុកសារពើភណ្ឌផលិតផល',
+            'Products & Items': 'ផលិតផល និងទំនិញ',
+            'Categories': 'ប្រភេទ', 'Category': 'ប្រភេទ',
+            'Category Management': 'ការគ្រប់គ្រងប្រភេទ',
+            'Product Categories': 'ប្រភេទផលិតផល',
+            'Organize and manage catalog classifications': 'រៀបចំ និងគ្រប់គ្រងចំណាត់ថ្នាក់កាតាឡុក',
+            'Add Category': 'បន្ថែមប្រភេទ', 'Category Name': 'ឈ្មោះប្រភេទ',
+            'Description': 'ការពិពណ៌នា', 'Associated Products': 'ផលិតផលពាក់ព័ន្ធ',
+            'Date Added': 'កាលបរិច្ឆេទបន្ថែម', 'Search categories...': 'ស្វែងរកប្រភេទ...',
+            'No description provided': 'មិនមានការពិពណ៌នាទេ',
+            'No categories found.': 'រកមិនឃើញប្រភេទទេ។',
+            'Actions': 'សកម្មភាព', 'Suppliers': 'អ្នកផ្គត់ផ្គង់',
+            'Supplier Management': 'ការគ្រប់គ្រងអ្នកផ្គត់ផ្គង់',
+            'Suppliers & Vendors': 'អ្នកផ្គត់ផ្គង់ និងអ្នកលក់',
+            'Directory of product vendors and contact details': 'បញ្ជីអ្នកលក់ផលិតផល និងព័ត៌មានទំនាក់ទំនង',
+            'Add Supplier': 'បន្ថែមអ្នកផ្គត់ផ្គង់',
+            'Supplier Name': 'ឈ្មោះអ្នកផ្គត់ផ្គង់',
+            'Supplier Company Name': 'ឈ្មោះក្រុមហ៊ុនអ្នកផ្គត់ផ្គង់',
+            'Phone': 'ទូរស័ព្ទ', 'Phone Number': 'លេខទូរស័ព្ទ',
+            'Email': 'អ៊ីមែល', 'Email Address': 'អាសយដ្ឋានអ៊ីមែល',
+            'Address': 'អាសយដ្ឋាន',
+            'Search supplier name, phone, email...': 'ស្វែងរកឈ្មោះ លេខទូរស័ព្ទ ឬអ៊ីមែលអ្នកផ្គត់ផ្គង់...',
+            'No suppliers registered.': 'មិនទាន់មានអ្នកផ្គត់ផ្គង់ទេ។',
+            'Product Inventory Catalog': 'កាតាឡុកសារពើភណ្ឌផលិតផល',
+            'View stock levels, SKU codes, pricing, and suppliers': 'មើលកម្រិតស្តុក លេខកូដ SKU តម្លៃ និងអ្នកផ្គត់ផ្គង់',
+            'Add Product': 'បន្ថែមផលិតផល',
+            'Search title, SKU, description...': 'ស្វែងរកឈ្មោះ លេខកូដ SKU ឬការពិពណ៌នា...',
+            'All Categories': 'គ្រប់ប្រភេទ',
+            'Stock Status': 'ស្ថានភាពស្តុក',
+            'In Stock': 'មានក្នុងស្តុក', 'Low Stock': 'ស្តុកទាប',
+            'Low Stock Warning': 'ព្រមានស្តុកទាប', 'Out of Stock': 'អស់ពីស្តុក',
+            'Filter': 'ត្រង', 'Reset': 'កំណត់ឡើងវិញ',
+            'SKU': 'លេខកូដ SKU', 'Code': 'កូដ', 'Unit Price': 'តម្លៃក្នុងមួយឯកតា',
+            'Stock Qty': 'បរិមាណស្តុក', 'Status': 'ស្ថានភាព',
+            'Supplier': 'អ្នកផ្គត់ផ្គង់', 'Valuation:': 'តម្លៃសរុប៖',
+            'Min:': 'អប្បបរមា៖', 'Unassigned': 'មិនទាន់កំណត់',
+            'View Details': 'មើលព័ត៌មានលម្អិត', 'Adjust Stock': 'កែតម្រូវស្តុក',
+            'Edit': 'កែប្រែ', 'Delete': 'លុប',
+            'No products match your current search/filter criteria.': 'មិនមានផលិតផលត្រូវនឹងលក្ខខណ្ឌស្វែងរក ឬត្រងបច្ចុប្បន្នទេ។',
+            'Product Details': 'ព័ត៌មានលម្អិតផលិតផល',
+            'Back to Products Catalog': 'ត្រឡប់ទៅកាតាឡុកផលិតផល',
+            'Current Quantity': 'បរិមាណបច្ចុប្បន្ន',
+            'Total Valuation': 'តម្លៃសរុប',
+            'Min Stock Threshold': 'កម្រិតស្តុកអប្បបរមា',
+            'No detailed product description provided.': 'មិនមានការពិពណ៌នាលម្អិតអំពីផលិតផលទេ។',
+            'Date Cataloged:': 'កាលបរិច្ឆេទចុះកាតាឡុក៖',
+            'Supplier Information': 'ព័ត៌មានអ្នកផ្គត់ផ្គង់',
+            'No supplier assigned to this product.': 'មិនទាន់មានអ្នកផ្គត់ផ្គង់សម្រាប់ផលិតផលនេះទេ។',
+            'Record Movement': 'កត់ត្រាចលនាស្តុក',
+            'Date & Time': 'កាលបរិច្ឆេទ និងម៉ោង',
+            'Movement Type': 'ប្រភេទចលនា', 'Quantity': 'បរិមាណ',
+            'User': 'អ្នកប្រើប្រាស់', 'Reference / Notes': 'ឯកសារយោង / កំណត់ចំណាំ',
+            'Stock In': 'ស្តុកចូល', 'Stock Out': 'ស្តុកចេញ',
+            'Stock Transactions': 'ប្រតិបត្តិការស្តុក',
+            'Inventory Stock Transactions Log': 'កំណត់ហេតុប្រតិបត្តិការស្តុក',
+            'Stock Movement Log': 'កំណត់ហេតុចលនាស្តុក',
+            'History of all Stock In (additions) and Stock Out (dispatches)': 'ប្រវត្តិស្តុកចូល (បន្ថែម) និងស្តុកចេញ (ដកចេញ) ទាំងអស់',
+            'Search product name, SKU, or reference note...': 'ស្វែងរកឈ្មោះផលិតផល លេខកូដ SKU ឬកំណត់ចំណាំ...',
+            '-- All Movement Types --': '-- គ្រប់ប្រភេទចលនា --',
+            'Stock In (+ Inventory)': 'ស្តុកចូល (+ សារពើភណ្ឌ)',
+            'Stock Out (- Inventory)': 'ស្តុកចេញ (- សារពើភណ្ឌ)',
+            'Timestamp': 'ពេលវេលា', 'Processed By': 'ដំណើរការដោយ',
+            'No stock movement records found.': 'រកមិនឃើញកំណត់ត្រាចលនាស្តុកទេ។',
+            'Movement Log': 'កំណត់ហេតុចលនា',
+            'Record Inventory Stock Movement': 'កត់ត្រាចលនាស្តុកសារពើភណ្ឌ',
+            'Select Product': 'ជ្រើសរើសផលិតផល',
+            'Transaction Type': 'ប្រភេទប្រតិបត្តិការ',
+            'Stock In adds inventory; Stock Out removes inventory.': 'ស្តុកចូលបន្ថែមសារពើភណ្ឌ។ ស្តុកចេញដកសារពើភណ្ឌ។',
+            'Notes / Reference (Optional)': 'កំណត់ចំណាំ / ឯកសារយោង (ជាជម្រើស)',
+            'Submit Transaction': 'ដាក់ស្នើប្រតិបត្តិការ',
+            'Settings': 'ការកំណត់',
+            'Manage Users': 'គ្រប់គ្រងអ្នកប្រើប្រាស់',
+            'Manage Users & Roles': 'គ្រប់គ្រងអ្នកប្រើប្រាស់ និងតួនាទី',
+            'User & Team Management': 'ការគ្រប់គ្រងអ្នកប្រើប្រាស់ និងក្រុម',
+            'Users & System Permissions': 'អ្នកប្រើប្រាស់ និងសិទ្ធិប្រព័ន្ធ',
+            'Control team access and assign Admin / Employee operational roles': 'គ្រប់គ្រងសិទ្ធិចូលប្រើ និងកំណត់តួនាទីអ្នកគ្រប់គ្រង / បុគ្គលិក',
+            'Add New User': 'បន្ថែមអ្នកប្រើប្រាស់ថ្មី',
+            'Role': 'តួនាទី', 'Date Joined': 'កាលបរិច្ឆេទចូលរួម',
+            'No email recorded': 'មិនមានអ៊ីមែល', 'Admin': 'អ្នកគ្រប់គ្រង',
+            'Manager': 'អ្នកចាត់ការ', 'Employee': 'បុគ្គលិក',
+            'Edit user': 'កែប្រែអ្នកប្រើប្រាស់', 'Switch role': 'ប្តូរតួនាទី',
+            'Remove user': 'លុបអ្នកប្រើប្រាស់',
+            'Current Account': 'គណនីបច្ចុប្បន្ន',
+            'No users found.': 'រកមិនឃើញអ្នកប្រើប្រាស់ទេ។',
+            'Reports & Data Export Center': 'មជ្ឈមណ្ឌលរបាយការណ៍ និងនាំចេញទិន្នន័យ',
+            'Inventory Reports': 'របាយការណ៍សារពើភណ្ឌ',
+            'Generate and export downloadable CSV spreadsheets or formatted PDF documents': 'បង្កើត និងនាំចេញឯកសារ CSV ឬ PDF',
+            'Full Stock Catalog': 'កាតាឡុកស្តុកពេញលេញ',
+            'Complete list of all products, SKUs, category classifications, prices, quantities, and current asset valuations.': 'បញ្ជីផលិតផល លេខកូដ SKU ប្រភេទ តម្លៃ បរិមាណ និងតម្លៃទ្រព្យសម្បត្តិបច្ចុប្បន្នទាំងអស់។',
+            'Low & Out-of-Stock': 'ស្តុកទាប និងអស់ពីស្តុក',
+            'Targeted report listing items reaching or below minimum stock thresholds for purchasing & reorder planning.': 'របាយការណ៍មុខទំនិញដែលដល់ ឬទាបជាងកម្រិតស្តុកអប្បបរមា សម្រាប់រៀបចំការទិញ និងបញ្ជាទិញឡើងវិញ។',
+            'Movement History': 'ប្រវត្តិចលនា',
+            'Stock In & Stock Out records': 'កំណត់ត្រាស្តុកចូល និងស្តុកចេញ',
+            'Auditing report detailing timestamps, quantities, operational notes, and personnel for all stock transactions.': 'របាយការណ៍សវនកម្មបង្ហាញពេលវេលា បរិមាណ កំណត់ចំណាំ និងបុគ្គលិកសម្រាប់ប្រតិបត្តិការស្តុកទាំងអស់។',
+            'Low & Out-of-Stock Live Audit Preview': 'មើលជាមុនសវនកម្មស្តុកទាប និងអស់ស្តុក',
+            'Product Name': 'ឈ្មោះផលិតផល', 'Current Qty': 'បរិមាណបច្ចុប្បន្ន',
+            'Min Threshold': 'កម្រិតអប្បបរមា',
+            'No stock alerts at this time!': 'បច្ចុប្បន្នមិនមានការជូនដំណឹងអំពីស្តុកទេ!',
+            'My Profile': 'ប្រវត្តិរូបរបស់ខ្ញុំ', 'Edit Profile': 'កែប្រែប្រវត្តិរូប',
+            'Update your account details.': 'ធ្វើបច្ចុប្បន្នភាពព័ត៌មានគណនីរបស់អ្នក។',
+            'Profile Photo': 'រូបថតប្រវត្តិរូប', 'Change Photo': 'ប្តូររូបថត',
+            'First Name': 'នាមខ្លួន', 'Last Name': 'នាមត្រកូល',
+            'Save Changes': 'រក្សាទុកការផ្លាស់ប្តូរ',
+            'Cancel': 'បោះបង់', 'Save Category': 'រក្សាទុកប្រភេទ',
+            'Save Supplier': 'រក្សាទុកអ្នកផ្គត់ផ្គង់', 'Back': 'ត្រឡប់ក្រោយ',
+            'Next': 'បន្ទាប់', 'Previous': 'មុន',
+            'Delete Product?': 'លុបផលិតផលមែនទេ?',
+            'Delete Category?': 'លុបប្រភេទមែនទេ?',
+            'Yes, Delete': 'បាទ/ចាស លុប',
+            'System Controls': 'ការគ្រប់គ្រងប្រព័ន្ធ',
+            'Data Controls': 'ការគ្រប់គ្រងទិន្នន័យ',
+            'Seed Sample Demo Data': 'បញ្ចូលទិន្នន័យសាកល្បង',
+            'Load Sample Demo Data': 'ផ្ទុកទិន្នន័យសាកល្បង',
+            'Reset System Data': 'កំណត់ទិន្នន័យប្រព័ន្ធឡើងវិញ',
+            'Reset to Clean State': 'សម្អាតទិន្នន័យឡើងវិញ',
+            'Export Reports': 'នាំចេញរបាយការណ៍',
+            'Catalog List': 'បញ្ជីកាតាឡុក',
+            'Stock In / Out': 'ស្តុកចូល / ចេញ',
+            'Total Products': 'ផលិតផលសរុប',
+            'Total Stock Units': 'បរិមាណស្តុកសរុប',
+            'Total Stock Quantity': 'បរិមាណស្តុកសរុប',
+            'Total Inventory Value': 'តម្លៃសារពើភណ្ឌសរុប',
+            'Inventory Valuation': 'តម្លៃសារពើភណ្ឌ',
+            'Low Stock Alerts': 'ការជូនដំណឹងស្តុកទាប',
+            'Cataloged items': 'មុខទំនិញក្នុងកាតាឡុក',
+            'Physical inventory': 'សារពើភណ្ឌជាក់ស្តែង',
+            'Asset valuation': 'តម្លៃទ្រព្យសម្បត្តិ',
+            'Below min threshold': 'ក្រោមកម្រិតអប្បបរមា',
+            'Active items in catalog': 'មុខទំនិញសកម្មក្នុងកាតាឡុក',
+            'Current physical stock': 'ស្តុកជាក់ស្តែងបច្ចុប្បន្ន',
+            'Stock value at current price': 'តម្លៃស្តុកតាមតម្លៃបច្ចុប្បន្ន',
+            'Action required': 'ត្រូវការចាត់វិធានការ',
+            'Stock Movement Overview': 'ទិដ្ឋភាពទូទៅចលនាស្តុក',
+            'Total In vs Out': 'ស្តុកចូលសរុប និងស្តុកចេញសរុប',
+            'Category Distribution': 'ការបែងចែកតាមប្រភេទ',
+            'By Categories': 'តាមប្រភេទ',
+            'Restock Priority List': 'បញ្ជីអាទិភាពបំពេញស្តុក',
+            'View All': 'មើលទាំងអស់', 'Restock': 'បំពេញស្តុក',
+            'Products in Catalog': 'ផលិតផលក្នុងកាតាឡុក',
+            'Items available': 'មុខទំនិញដែលមាន',
+            'Total units in warehouse': 'ចំនួនឯកតាសរុបក្នុងឃ្លាំង',
+            'Low Stock Warnings': 'ការព្រមានស្តុកទាប',
+            'Items low on quantity': 'មុខទំនិញដែលមានបរិមាណតិច',
+            'Employee Workspace': 'កន្លែងធ្វើការបុគ្គលិក',
+            'Log Stock In / Out': 'កត់ត្រាស្តុកចូល / ចេញ',
+            'Browse Catalog': 'រកមើលកាតាឡុក',
+            'My Logged Activity': 'សកម្មភាពដែលខ្ញុំបានកត់ត្រា',
+            'Record New': 'កត់ត្រាថ្មី',
+            'Time': 'ម៉ោង', 'Type': 'ប្រភេទ', 'Qty': 'បរិមាណ',
+            'You haven\'t recorded any stock operations yet today.': 'ថ្ងៃនេះអ្នកមិនទាន់បានកត់ត្រាប្រតិបត្តិការស្តុកណាមួយទេ។',
+            'Items Needing Restock': 'មុខទំនិញដែលត្រូវបំពេញស្តុក',
+            'Browse All': 'រកមើលទាំងអស់',
+            'Log Out': 'ចាកចេញ', 'Sign Out': 'ចាកចេញ', 'Save Product': 'រក្សាទុកផលិតផល',
+            'Back Catalog': 'ត្រឡប់ទៅកាតាឡុក',
+            'SKU Code': 'លេខកូដ SKU',
+            'Minimum Stock Threshold': 'កម្រិតស្តុកអប្បបរមា',
+            'Product Description': 'ការពិពណ៌នាផលិតផល',
+            'Upload Product Image': 'ផ្ទុករូបភាពផលិតផល',
+            'Search': 'ស្វែងរក', 'Save': 'រក្សាទុក',
+            'Submit': 'ដាក់ស្នើ', 'System': 'ប្រព័ន្ធ',
+            'Unassigned': 'មិនទាន់កំណត់',
+            'Admin Portal': 'វិបផតថលអ្នកគ្រប់គ្រង',
+            'Welcome to Your Company Admin Workspace 🎉': 'សូមស្វាគមន៍មកកាន់កន្លែងធ្វើការអ្នកគ្រប់គ្រងក្រុមហ៊ុន 🎉',
+            'Configure your business categories, suppliers, catalog products, and invite your management and employee team.': 'រៀបចំប្រភេទអាជីវកម្ម អ្នកផ្គត់ផ្គង់ ផលិតផលក្នុងកាតាឡុក និងអញ្ជើញក្រុមអ្នកគ្រប់គ្រង និងបុគ្គលិក។',
+            'Create First Category': 'បង្កើតប្រភេទដំបូង',
+            'Create User Accounts': 'បង្កើតគណនីអ្នកប្រើប្រាស់',
+            'First-Time Setup Guide 🎉': 'ការណែនាំរៀបចំដំបូង 🎉',
+            'Get started with your fresh stock management workspace in 4 easy steps, or load sample demo data with 1 click to test out all features.': 'ចាប់ផ្តើមប្រើកន្លែងគ្រប់គ្រងស្តុកថ្មីតាម ៤ ជំហានងាយៗ ឬផ្ទុកទិន្នន័យសាកល្បងដោយចុចម្តង ដើម្បីសាកល្បងមុខងារទាំងអស់។',
+            'Start Setup Guide': 'ចាប់ផ្តើមការណែនាំរៀបចំ',
+            'Explore with Sample Data': 'សាកល្បងជាមួយទិន្នន័យគំរូ',
+            'Step 1': 'ជំហានទី ១', 'Step 2': 'ជំហានទី ២',
+            'Step 3': 'ជំហានទី ៣', 'Step 4': 'ជំហានទី ៤',
+            'Added': 'បានបន្ថែម', 'Pending': 'កំពុងរង់ចាំ',
+            'Create Categories': 'បង្កើតប្រភេទ',
+            'Organize your inventory into categories (e.g. Electronics, Supplies).': 'រៀបចំសារពើភណ្ឌរបស់អ្នកតាមប្រភេទ (ឧ. គ្រឿងអេឡិចត្រូនិក សម្ភារៈប្រើប្រាស់)។',
+            'Add Suppliers': 'បន្ថែមអ្នកផ្គត់ផ្គង់',
+            'Record vendors & contact info for procurement & stock sourcing.': 'កត់ត្រាអ្នកលក់ និងព័ត៌មានទំនាក់ទំនងសម្រាប់ការទិញ និងរកប្រភពស្តុក។',
+            'Add First Product': 'បន្ថែមផលិតផលដំបូង',
+            'Catalog products with SKU, pricing, initial quantity & min alerts.': 'ចុះបញ្ជីផលិតផលជាមួយលេខកូដ SKU តម្លៃ បរិមាណដំបូង និងការជូនដំណឹងកម្រិតអប្បបរមា។',
+            'Record Movement': 'កត់ត្រាចលនាស្តុក',
+            'Low & Out of Stock Alerts': 'ការជូនដំណឹងស្តុកទាប និងអស់ពីស្តុក',
+            'Critical Stock Alerts': 'ការជូនដំណឹងស្តុកសំខាន់ៗ',
+            'All products are adequately stocked!': 'ផលិតផលទាំងអស់មានស្តុកគ្រប់គ្រាន់!',
+            'Recent Stock Transactions': 'ប្រតិបត្តិការស្តុកថ្មីៗ',
+            'View Full History': 'មើលប្រវត្តិទាំងមូល',
+            'Cumulative Transactions': 'ប្រតិបត្តិការសរុប',
+            'Category Breakdown': 'ការបែងចែកតាមប្រភេទ',
+            'Product Distribution': 'ការបែងចែកផលិតផល',
+            'Recent Operations': 'ប្រតិបត្តិការថ្មីៗ',
+            'Full History': 'ប្រវត្តិទាំងមូល',
+            'No recent operations.': 'មិនមានប្រតិបត្តិការថ្មីៗទេ។',
+            'Requires immediate order': 'ត្រូវការបញ្ជាទិញភ្លាមៗ',
+            'Needs order': 'ត្រូវការបញ្ជាទិញ',
+            'Team Members': 'សមាជិកក្រុម',
+            'Manage Users →': 'គ្រប់គ្រងអ្នកប្រើប្រាស់ →',
+            'Export Reports': 'នាំចេញរបាយការណ៍',
+            'Reports': 'របាយការណ៍',
+            'Stock Inventory Management System ©': 'ប្រព័ន្ធគ្រប់គ្រងសារពើភណ្ឌស្តុក ©',
+            'Modern Enterprise Dashboard': 'ផ្ទាំងគ្រប់គ្រងសហគ្រាសទំនើប',
+            'Enter product title': 'បញ្ចូលឈ្មោះផលិតផល',
+            'Enter product SKU (e.g., PROD-1001)': 'បញ្ចូលលេខកូដ SKU ផលិតផល (ឧ. PROD-1001)',
+            'Enter product specifications...': 'បញ្ចូលលក្ខណៈបច្ចេកទេសផលិតផល...',
+            'Enter category name (e.g., Electronics)': 'បញ្ចូលឈ្មោះប្រភេទ (ឧ. គ្រឿងអេឡិចត្រូនិក)',
+            'Enter category description...': 'បញ្ចូលការពិពណ៌នាប្រភេទ...',
+            'Enter supplier company name': 'បញ្ចូលឈ្មោះក្រុមហ៊ុនអ្នកផ្គត់ផ្គង់',
+            'Enter supplier phone number': 'បញ្ចូលលេខទូរស័ព្ទអ្នកផ្គត់ផ្គង់',
+            'Enter supplier email address': 'បញ្ចូលអ៊ីមែលអ្នកផ្គត់ផ្គង់',
+            'Enter full address...': 'បញ្ចូលអាសយដ្ឋានពេញលេញ...',
+            'Reason or reference note (e.g. Order #123, Restock from supplier...)': 'មូលហេតុ ឬកំណត់ចំណាំយោង (ឧ. ការបញ្ជាទិញ #123 បំពេញស្តុកពីអ្នកផ្គត់ផ្គង់...)',
+            'Search categories...': 'ស្វែងរកប្រភេទ...',
+            'Search title, SKU, description...': 'ស្វែងរកឈ្មោះ លេខកូដ SKU ឬការពិពណ៌នា...',
+            'Search supplier name, phone, email...': 'ស្វែងរកឈ្មោះ លេខទូរស័ព្ទ ឬអ៊ីមែលអ្នកផ្គត់ផ្គង់...',
+            'Email Address': 'អាសយដ្ឋានអ៊ីមែល',
+            'Password': 'ពាក្យសម្ងាត់',
+            'Remember me': 'ចងចាំខ្ញុំ',
+            'Sign In': 'ចូលគណនី',
+            'Forgot Password?': 'ភ្លេចពាក្យសម្ងាត់មែនទេ?',
+            'Create an account': 'បង្កើតគណនី',
+            'Register': 'ចុះឈ្មោះ',
+            'Already have an account?': 'មានគណនីរួចហើយមែនទេ?',
+            'Verify Code': 'ផ្ទៀងផ្ទាត់លេខកូដ',
+            'Resend Code': 'ផ្ញើលេខកូដម្តងទៀត',
+            'Set New Password': 'កំណត់ពាក្យសម្ងាត់ថ្មី',
+            'Confirm Password': 'បញ្ជាក់ពាក្យសម្ងាត់',
+            'Save Password': 'រក្សាទុកពាក្យសម្ងាត់',
+            'Go to Login': 'ទៅកាន់ទំព័រចូល',
+            'Back to Login': 'ត្រឡប់ទៅការចូលគណនី',
+            'Add New User': 'បន្ថែមអ្នកប្រើប្រាស់ថ្មី',
+            'Save User': 'រក្សាទុកអ្នកប្រើប្រាស់',
+            'Current Account': 'គណនីបច្ចុប្បន្ន',
+            'View': 'មើល',
+            'Edit Profile': 'កែប្រែប្រវត្តិរូប',
+            'Editing profile for': 'កំពុងកែប្រែប្រវត្តិរូបរបស់',
+            'Upload Product Image': 'ផ្ទុករូបភាពផលិតផល',
+            'Choose File': 'ជ្រើសរើសឯកសារ',
+            'No file chosen': 'មិនទាន់ជ្រើសរើសឯកសារទេ',
+            'Save Changes': 'រក្សាទុកការផ្លាស់ប្តូរ',
+            'Select an option': 'ជ្រើសរើសជម្រើស',
+            'Stock value at current price': 'តម្លៃស្តុកតាមតម្លៃបច្ចុប្បន្ន',
+            'Total Stock In': 'ស្តុកចូលសរុប',
+            'Total Stock Out': 'ស្តុកចេញសរុប',
+            'Total In vs Out': 'ស្តុកចូលសរុប និងស្តុកចេញសរុប',
+            'Products & Suppliers': 'ផលិតផល និងអ្នកផ្គត់ផ្គង់',
+            'Search product name, SKU, or reference note...': 'ស្វែងរកឈ្មោះផលិតផល លេខកូដ SKU ឬកំណត់ចំណាំ...',
+            'Are you sure you want to reset all inventory data? This will clear products, categories, suppliers, and transactions.': 'តើអ្នកប្រាកដថាចង់កំណត់ទិន្នន័យស្តុកទាំងអស់ឡើងវិញមែនទេ? វានឹងលុបផលិតផល ប្រភេទ អ្នកផ្គត់ផ្គង់ និងប្រតិបត្តិការ។',
+            'Administrator Control Dashboard': 'ផ្ទាំងគ្រប់គ្រងអ្នកគ្រប់គ្រងប្រព័ន្ធ',
+            'Manager Operations Workspace': 'កន្លែងគ្រប់គ្រងប្រតិបត្តិការរបស់អ្នកចាត់ការ',
+            'Inventory Overview Dashboard': 'ផ្ទាំងទិដ្ឋភាពទូទៅសារពើភណ្ឌ',
+            'Employee Operations Portal': 'វិបផតថលប្រតិបត្តិការបុគ្គលិក',
+            'Manager': 'អ្នកចាត់ការ', 'Administrator': 'អ្នកគ្រប់គ្រង',
+            'Welcome to Stock Inventory': 'សូមស្វាគមន៍មកកាន់ប្រព័ន្ធគ្រប់គ្រងស្តុក',
+            'Configure your business categories, suppliers, catalog products, and invite your management and employee team.': 'រៀបចំប្រភេទអាជីវកម្ម អ្នកផ្គត់ផ្គង់ ផលិតផលក្នុងកាតាឡុក និងអញ្ជើញក្រុមអ្នកគ្រប់គ្រង និងបុគ្គលិក។',
+            'Create First Category': 'បង្កើតប្រភេទដំបូង',
+            'Create User Accounts': 'បង្កើតគណនីអ្នកប្រើប្រាស់',
+            'First-Time Setup Guide 🎉': 'ការណែនាំរៀបចំដំបូង 🎉',
+            'Get started with your fresh stock management workspace in 4 easy steps, or load sample demo data with 1 click to test out all features.': 'ចាប់ផ្តើមប្រើកន្លែងគ្រប់គ្រងស្តុកថ្មីតាម ៤ ជំហានងាយៗ ឬផ្ទុកទិន្នន័យសាកល្បងដោយចុចម្តង ដើម្បីសាកល្បងមុខងារទាំងអស់។',
+            'Start Setup Guide': 'ចាប់ផ្តើមការណែនាំរៀបចំ',
+            'Explore with Sample Data': 'សាកល្បងជាមួយទិន្នន័យគំរូ',
+            'Step 1': 'ជំហានទី ១', 'Step 2': 'ជំហានទី ២',
+            'Step 3': 'ជំហានទី ៣', 'Step 4': 'ជំហានទី ៤',
+            'Added': 'បានបន្ថែម', 'Pending': 'កំពុងរង់ចាំ',
+            'Create Categories': 'បង្កើតប្រភេទ',
+            'Organize your inventory into categories (e.g. Electronics, Supplies).': 'រៀបចំសារពើភណ្ឌរបស់អ្នកតាមប្រភេទ (ឧ. គ្រឿងអេឡិចត្រូនិក សម្ភារៈប្រើប្រាស់)។',
+            'Add Suppliers': 'បន្ថែមអ្នកផ្គត់ផ្គង់',
+            'Record vendors & contact info for procurement & stock sourcing.': 'កត់ត្រាអ្នកលក់ និងព័ត៌មានទំនាក់ទំនងសម្រាប់ការទិញ និងរកប្រភពស្តុក។',
+            'Add First Product': 'បន្ថែមផលិតផលដំបូង',
+            'Catalog products with SKU, pricing, initial quantity & min alerts.': 'ចុះបញ្ជីផលិតផលជាមួយលេខកូដ SKU តម្លៃ បរិមាណដំបូង និងការជូនដំណឹងកម្រិតអប្បបរមា។',
+            'Low & Out of Stock Alerts': 'ការជូនដំណឹងស្តុកទាប និងអស់ពីស្តុក',
+            'Critical Stock Alerts': 'ការជូនដំណឹងស្តុកសំខាន់ៗ',
+            'Recent Stock Transactions': 'ប្រតិបត្តិការស្តុកថ្មីៗ',
+            'View Full History': 'មើលប្រវត្តិទាំងមូល',
+            'Cumulative Transactions': 'ប្រតិបត្តិការសរុប',
+            'Category Breakdown': 'ការបែងចែកតាមប្រភេទ',
+            'Product Distribution': 'ការបែងចែកផលិតផល',
+            'Recent Operations': 'ប្រតិបត្តិការថ្មីៗ',
+            'Full History': 'ប្រវត្តិទាំងមូល',
+            'No recent operations.': 'មិនមានប្រតិបត្តិការថ្មីៗទេ។',
+            'Requires immediate order': 'ត្រូវការបញ្ជាទិញភ្លាមៗ',
+            'Needs order': 'ត្រូវការបញ្ជាទិញ',
+            'Team Members': 'សមាជិកក្រុម',
+            'Manage Users →': 'គ្រប់គ្រងអ្នកប្រើប្រាស់ →',
+            'Reports': 'របាយការណ៍',
+            'Active items in catalog': 'មុខទំនិញសកម្មក្នុងកាតាឡុក',
+            'Current physical stock': 'ស្តុកជាក់ស្តែងបច្ចុប្បន្ន',
+            'Restock Priority List': 'បញ្ជីអាទិភាពបំពេញស្តុក',
+            'Items Needing Restock': 'មុខទំនិញដែលត្រូវបំពេញស្តុក',
+            'Recent Activity': 'សកម្មភាពថ្មីៗ',
+            'All products are adequately stocked!': 'ផលិតផលទាំងអស់មានស្តុកគ្រប់គ្រាន់!',
+            'No recent activity.': 'មិនមានសកម្មភាពថ្មីៗទេ។',
+            'Log Out': 'ចាកចេញ', 'Sign Out': 'ចាកចេញ',
+            'Edit Product': 'កែប្រែផលិតផល',
+            'Edit Category': 'កែប្រែប្រភេទ',
+            'Edit Supplier': 'កែប្រែអ្នកផ្គត់ផ្គង់',
+            'Delete Supplier?': 'លុបអ្នកផ្គត់ផ្គង់មែនទេ?',
+            'No stock movement logs recorded for this product yet.': 'មិនទាន់មានកំណត់ត្រាចលនាស្តុកសម្រាប់ផលិតផលនេះទេ។',
+            'Are you sure you want to delete user?': 'តើអ្នកប្រាកដថាចង់លុបអ្នកប្រើប្រាស់នេះមែនទេ?',
+            'Price ($)': 'តម្លៃ ($)', 'Unit Price ($)': 'តម្លៃក្នុងមួយឯកតា ($)',
+            'Product Name': 'ឈ្មោះផលិតផល',
+            'Product Code': 'កូដផលិតផល', 'SKU Code': 'លេខកូដ SKU',
+            'Category': 'ប្រភេទ',
+            'Current Quantity': 'បរិមាណបច្ចុប្បន្ន',
+            'Minimum Stock Threshold': 'កម្រិតស្តុកអប្បបរមា',
+            'Select Product': 'ជ្រើសរើសផលិតផល',
+            'Transaction Type': 'ប្រភេទប្រតិបត្តិការ',
+            'Quantity': 'បរិមាណ',
+            'Save Changes': 'រក្សាទុកការផ្លាស់ប្តូរ',
+            'Back to Products Catalog': 'ត្រឡប់ទៅកាតាឡុកផលិតផល',
+            'Back Catalog': 'ត្រឡប់ទៅកាតាឡុក',
+            'Back': 'ត្រឡប់ក្រោយ',
+            'CSV': 'CSV',
+            'PDF': 'PDF',
+            'Login': 'ចូលគណនី',
+            'Sign In': 'ចូលគណនី',
+            'Sign Up': 'ចុះឈ្មោះ',
+            'Create New Account': 'បង្កើតគណនីថ្មី',
+            'Register': 'ចុះឈ្មោះ',
+            'Register New User': 'ចុះឈ្មោះអ្នកប្រើប្រាស់ថ្មី',
+            'User Registration': 'ការចុះឈ្មោះអ្នកប្រើប្រាស់',
+            'Register New Team Member': 'ចុះឈ្មោះសមាជិកក្រុមថ្មី',
+            'Create an account for a new admin or warehouse employee.': 'បង្កើតគណនីសម្រាប់អ្នកគ្រប់គ្រងថ្មី ឬបុគ្គលិកឃ្លាំង។',
+            'Back to User List': 'ត្រឡប់ទៅបញ្ជីអ្នកប្រើប្រាស់',
+            'Assign Role': 'កំណត់តួនាទី',
+            'Register User': 'ចុះឈ្មោះអ្នកប្រើប្រាស់',
+            'Don\'t have an account?': 'មិនទាន់មានគណនីមែនទេ?',
+            'Already have an account?': 'មានគណនីរួចហើយមែនទេ?',
+            'Forgot password?': 'ភ្លេចពាក្យសម្ងាត់មែនទេ?',
+            'Forgot Password': 'ភ្លេចពាក្យសម្ងាត់',
+            'Enter your email address and we\'ll send you a verification code to reset your password.': 'បញ្ចូលអាសយដ្ឋានអ៊ីមែលរបស់អ្នក ហើយយើងនឹងផ្ញើលេខកូដផ្ទៀងផ្ទាត់ដើម្បីកំណត់ពាក្យសម្ងាត់ឡើងវិញ។',
+            'Send Reset Code': 'ផ្ញើលេខកូដកំណត់ឡើងវិញ',
+            'Set Password': 'កំណត់ពាក្យសម្ងាត់',
+            'New Password': 'ពាក្យសម្ងាត់ថ្មី',
+            'Confirm New Password': 'បញ្ជាក់ពាក្យសម្ងាត់ថ្មី',
+            'Save New Password': 'រក្សាទុកពាក្យសម្ងាត់ថ្មី',
+            'Password': 'ពាក្យសម្ងាត់',
+            'Confirm Password': 'បញ្ជាក់ពាក្យសម្ងាត់',
+            'Email Address': 'អាសយដ្ឋានអ៊ីមែល',
+            'Position': 'តួនាទី',
+            'Select your position': 'ជ្រើសរើសតួនាទីរបស់អ្នក',
+            'Toggle role for user': 'ប្តូរតួនាទីអ្នកប្រើប្រាស់',
+            'Remove': 'លុប',
+            'View Details': 'មើលព័ត៌មានលម្អិត',
+            'Back to Products Catalog': 'ត្រឡប់ទៅកាតាឡុកផលិតផល',
+            'Edit User Account': 'កែប្រែគណនីអ្នកប្រើប្រាស់',
+            'Editing profile for': 'កំពុងកែប្រែប្រវត្តិរូបរបស់',
+            'Delete Product?': 'លុបផលិតផលមែនទេ?',
+            'Delete Category?': 'លុបប្រភេទមែនទេ?',
+            'Delete Supplier?': 'លុបអ្នកផ្គត់ផ្គង់មែនទេ?',
+            'Yes, Delete': 'បាទ/ចាស លុប',
+            'No stock alerts at this time!': 'បច្ចុប្បន្នមិនមានការជូនដំណឹងអំពីស្តុកទេ!',
+            'No products match your current search/filter criteria.': 'មិនមានផលិតផលត្រូវនឹងលក្ខខណ្ឌស្វែងរក ឬត្រងបច្ចុប្បន្នទេ។',
+            'No suppliers registered.': 'មិនទាន់មានអ្នកផ្គត់ផ្គង់ទេ។',
+            'No users found.': 'រកមិនឃើញអ្នកប្រើប្រាស់ទេ។',
+            'No categories found.': 'រកមិនឃើញប្រភេទទេ។',
+            'Save Category': 'រក្សាទុកប្រភេទ',
+            'Save Supplier': 'រក្សាទុកអ្នកផ្គត់ផ្គង់',
+            'Save': 'រក្សាទុក', 'Save Product': 'រក្សាទុកផលិតផល',
+            'Save Changes': 'រក្សាទុកការផ្លាស់ប្តូរ',
+            'Submit Transaction': 'ដាក់ស្នើប្រតិបត្តិការ',
+            'Price ($)': 'តម្លៃ ($)', 'Unit Price ($)': 'តម្លៃក្នុងមួយឯកតា ($)',
+            'Product Name': 'ឈ្មោះផលិតផល',
+            'Product Code': 'កូដផលិតផល', 'SKU Code': 'លេខកូដ SKU',
+            'Category': 'ប្រភេទ',
+            'Current Quantity': 'បរិមាណបច្ចុប្បន្ន',
+            'Minimum Stock Threshold': 'កម្រិតស្តុកអប្បបរមា',
+            'Select Product': 'ជ្រើសរើសផលិតផល',
+            'Transaction Type': 'ប្រភេទប្រតិបត្តិការ',
+            'Quantity': 'បរិមាណ',
+            'Enter your email address': 'បញ្ចូលអាសយដ្ឋានអ៊ីមែលរបស់អ្នក',
+            'Enter your password': 'បញ្ចូលពាក្យសម្ងាត់របស់អ្នក',
+            'Enter your first name': 'បញ្ចូលនាមខ្លួនរបស់អ្នក',
+            'Enter your last name': 'បញ្ចូលនាមត្រកូលរបស់អ្នក',
+            'Enter your first name': 'បញ្ចូលនាមខ្លួនរបស់អ្នក',
+            'Enter your last name': 'បញ្ចូលនាមត្រកូលរបស់អ្នក',
+            'Search': 'ស្វែងរក',
+            'Loading...': 'កំពុងផ្ទុក...',
+            'Verify OTP': 'ផ្ទៀងផ្ទាត់លេខកូដ OTP',
+            'Verification Code': 'លេខកូដផ្ទៀងផ្ទាត់',
+            'Resend OTP': 'ផ្ញើលេខកូដ OTP ម្តងទៀត',
+            'Verify': 'ផ្ទៀងផ្ទាត់',
+            'Back to Login': 'ត្រឡប់ទៅទំព័រចូល',
+            'Stock Inventory Management System': 'ប្រព័ន្ធគ្រប់គ្រងសារពើភណ្ឌស្តុក',
+            'Stock Inventory System': 'ប្រព័ន្ធសារពើភណ្ឌស្តុក'
+        };
+
+        function translateString(value, lang) {
+            const trimmed = value.trim();
+            if (lang !== 'kh') return value;
+            if (khmerTranslations[trimmed]) return value.replace(trimmed, khmerTranslations[trimmed]);
+
+            let match = trimmed.match(/^(\d+) items?$/);
+            if (match) return value.replace(trimmed, match[1] + ' មុខទំនិញ');
+            match = trimmed.match(/^(\d+) cataloged products?$/);
+            if (match) return value.replace(trimmed, 'ផលិតផលក្នុងកាតាឡុក ' + match[1] + ' មុខ');
+            match = trimmed.match(/^Stock Inventory Management System © (\d{4}) \| Modern Enterprise Dashboard$/);
+            if (match) return value.replace(trimmed, 'ប្រព័ន្ធគ្រប់គ្រងសារពើភណ្ឌស្តុក © ' + match[1] + ' | ផ្ទាំងគ្រប់គ្រងសហគ្រាសទំនើប');
+            match = trimmed.match(/^Showing (\d+) to (\d+) of (\d+)( items?| logs?)$/);
+            if (match) {
+                const unit = match[4].includes('log') ? ' កំណត់ត្រា' : ' មុខទំនិញ';
+                return value.replace(trimmed, 'បង្ហាញ ' + match[1] + ' ដល់ ' + match[2] + ' ក្នុងចំណោម ' + match[3] + unit);
+            }
+            match = trimmed.match(/^(\d+) items requiring restock$/);
+            if (match) return value.replace(trimmed, match[1] + ' មុខទំនិញត្រូវការបំពេញស្តុក');
+            return value;
+        }
+
+        function translatePage(lang) {
+            const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+            let node;
+            while ((node = walker.nextNode())) {
+                if (node.parentElement.closest('script, style, textarea, [data-en]')) continue;
+                if (node.originalEnglish === undefined) node.originalEnglish = node.nodeValue;
+                node.nodeValue = translateString(node.originalEnglish, lang);
+            }
+            document.querySelectorAll('[placeholder], [title], [aria-label]').forEach(function(el) {
+                ['placeholder', 'title', 'aria-label'].forEach(function(attribute) {
+                    const value = el.getAttribute(attribute);
+                    if (value) {
+                        const originalProperty = '__languageOriginal_' + attribute.replace(/-/g, '_');
+                        if (el[originalProperty] === undefined) el[originalProperty] = value;
+                        el.setAttribute(attribute, translateString(el[originalProperty], lang));
+                    }
+                });
+            });
+            if (document.documentElement.dataset.languageOriginalTitle === undefined) {
+                document.documentElement.dataset.languageOriginalTitle = document.title;
+            }
+            document.title = document.documentElement.dataset.languageOriginalTitle
+                .split(' - ')
+                .map(function(part) { return translateString(part, lang); })
+                .join(' - ');
+            window.setTimeout(function() {
+                if (!window.Chart || !window.Chart.getChart) return;
+                document.querySelectorAll('canvas').forEach(function(canvas) {
+                    const chart = window.Chart.getChart(canvas);
+                    if (!chart || !Array.isArray(chart.data.labels)) return;
+                    if (!chart.languageOriginalLabels) chart.languageOriginalLabels = chart.data.labels.slice();
+                    chart.data.labels = chart.languageOriginalLabels.map(function(label) {
+                        return typeof label === 'string' ? translateString(label, lang).trim() : label;
+                    });
+                    chart.update();
+                });
+            }, 0);
+        }
+
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

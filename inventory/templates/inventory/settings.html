@@ -1,0 +1,58 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Settings - Stock Inventory Management System{% endblock %}
+{% block page_heading %}Settings{% endblock %}
+
+{% block extra_css %}
+<style>
+    .settings-card-link {
+        color: inherit;
+        text-decoration: none;
+        transition: border-color 150ms ease, box-shadow 150ms ease;
+    }
+
+    .settings-card-link:hover,
+    .settings-card-link:focus-visible {
+        color: inherit;
+        border-color: var(--primary-color) !important;
+        box-shadow: 0 0.25rem 0.75rem rgba(15, 23, 42, 0.12) !important;
+    }
+
+    .settings-card-link:focus-visible {
+        outline: 2px solid var(--primary-color);
+        outline-offset: 2px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<a href="{% url 'user_list' %}" class="card card-custom border-0 shadow-sm mb-3 settings-card-link">
+    <div class="card-body px-3 py-2 d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+            <h6 class="fw-bold mb-0 small" data-en="Team Management" data-kh="ការគ្រប់គ្រងក្រុម">
+                Team Management
+                {% if pending_approval_count %}<span class="badge bg-danger ms-1">{{ pending_approval_count }}</span>{% endif %}
+            </h6>
+            <p class="text-muted mb-0" style="font-size:0.75rem;" data-en="Manage employee accounts, roles, and signup approval requests." data-kh="គ្រប់គ្រងគណនីបុគ្គលិក តួនាទី និងសំណើអនុម័តការចុះឈ្មោះ។">Manage employee accounts, roles, and signup approval requests.</p>
+        </div>
+    </div>
+</a>
+
+<a href="{% url 'currency_settings' %}" class="card card-custom border-0 shadow-sm mb-3 settings-card-link">
+    <div class="card-body px-3 py-2 d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+            <h6 class="fw-bold mb-0 small" data-en="Exchange Currency" data-kh="អត្រាប្តូរប្រាក់">Exchange Currency</h6>
+            <p class="text-muted mb-0" style="font-size:0.75rem;" data-en="Choose which currency is displayed throughout the application and set the exchange rate." data-kh="ជ្រើសរើសរូបិយប័ណ្ណសម្រាប់បង្ហាញក្នុងកម្មវិធី និងកំណត់អត្រាប្តូរប្រាក់។">Choose which currency is displayed throughout the application and set the exchange rate.</p>
+        </div>
+    </div>
+</a>
+
+<a href="{% url 'system_controls' %}" class="card card-custom border-0 shadow-sm mb-3 settings-card-link">
+    <div class="card-body px-3 py-2 d-flex flex-wrap align-items-center justify-content-between gap-2">
+        <div>
+            <h6 class="fw-bold mb-0 small" data-en="System Controls" data-kh="ការគ្រប់គ្រងប្រព័ន្ធ">System Controls</h6>
+            <p class="text-muted mb-0" style="font-size:0.75rem;" data-en="Manage system data — seed sample data or reset all inventory records." data-kh="គ្រប់គ្រងទិន្នន័យប្រព័ន្ធ — បញ្ចូលទិន្នន័យគំរូ ឬកំណត់កំណត់ត្រាស្តុករទាំងអស់ឡើងVិញ។">Manage system data — seed sample data or reset all inventory records.</p>
+        </div>
+    </div>
+</a>
+{% endblock %}

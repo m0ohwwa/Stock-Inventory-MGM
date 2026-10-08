@@ -1,0 +1,32 @@
+# ============================================================
+#  Django MGM Inventory System - .gitignore
+# ============================================================
+
+# Environment variables (NEVER commit this!)
+.env
+.env.*
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Django
+*.log
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+sent_emails/
+
+# IDE / OS
+.DS_Store
+.vscode/
+.idea/
+*.swp
+Thumbs.db

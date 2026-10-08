@@ -1,0 +1,257 @@
+{% extends 'inventory/base.html' %}
+
+{% block title %}Email Verification - Stock Inventory System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .otp-input-container {
+        display: flex;
+        gap: 10px;
+        justify-content: center;
+        margin: 1.5rem 0;
+    }
+    .otp-box {
+        width: 50px;
+        height: 58px;
+        text-align: center;
+        font-size: 1.6rem;
+        font-weight: 700;
+        font-family: monospace;
+        border: 2px solid #cbd5e1;
+        border-radius: 12px;
+        background-color: #ffffff;
+        transition: all 0.2s ease-in-out;
+        color: #0f172a;
+    }
+    .otp-box:focus {
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.15);
+        outline: none;
+    }
+    .otp-box.is-invalid {
+        border-color: #ef4444;
+        background-color: #fef2f2;
+        animation: shake 0.3s ease-in-out;
+    }
+    .otp-box.is-valid {
+        border-color: #22c55e;
+        background-color: #f0fdf4;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        20%, 60% { transform: translateX(-6px); }
+        40%, 80% { transform: translateX(6px); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="col-md-6 col-lg-5">
+
+
+        <div class="card card-custom p-4 shadow-sm border-0">
+            <div class="alert alert-info py-2 px-3 small border-0 bg-info-subtle text-info-emphasis mb-4 rounded-3 text-center">
+                <i class="fa-solid fa-paper-plane me-1"></i> OTP sent to: <strong>{{ email }}</strong>
+            </div>
+
+            <!-- Real-Time Status Notification -->
+            <div id="otpStatus" class="text-center small mb-3 fw-semibold" style="min-height: 24px;"></div>
+
+            <form id="otpForm" method="post">
+                {% csrf_token %}
+                
+                <div class="otp-input-container">
+                    <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric" autofocus>
+                    <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                    <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                    <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                    <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                    <input type="text" class="otp-box" maxlength="1" pattern="[0-9]" inputmode="numeric">
+                </div>
+
+                <input type="hidden" name="otp_code" id="hiddenOtpInput">
+
+                <button type="submit" id="submitBtn" class="btn btn-primary w-100 py-2.5 fw-semibold rounded-3 shadow-sm mb-3">
+                    Verify & Activate
+                </button>
+            </form>
+
+            <div class="d-flex justify-content-between align-items-center border-top pt-3 text-muted small">
+                <a href="{% url 'signup' %}" class="text-secondary text-decoration-none">
+                    <i class="fa-solid fa-arrow-left me-1"></i> Back
+                </a>
+                <span>
+                    <span id="timerText" class="text-muted">Resend code in <strong id="countdown">60</strong>s</span>
+                    <button type="button" id="resendBtn" class="btn btn-link btn-sm p-0 fw-bold text-primary text-decoration-none d-none">
+                        Resend Code
+                    </button>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const otpBoxes = document.querySelectorAll('.otp-box');
+        const hiddenInput = document.getElementById('hiddenOtpInput');
+        const otpForm = document.getElementById('otpForm');
+        const otpStatus = document.getElementById('otpStatus');
+        const submitBtn = document.getElementById('submitBtn');
+        const resendBtn = document.getElementById('resendBtn');
+        const timerText = document.getElementById('timerText');
+        const countdownEl = document.getElementById('countdown');
+
+        // Focus first box on load
+        if(otpBoxes.length > 0) otpBoxes[0].focus();
+
+        // Handle auto-focus and input events across 6 boxes
+        otpBoxes.forEach((box, index) => {
+            box.addEventListener('input', function(e) {
+                const val = this.value.replace(/[^0-9]/g, '');
+                this.value = val;
+
+                if (val && index < otpBoxes.length - 1) {
+                    otpBoxes[index + 1].focus();
+                }
+
+                checkAndAutoSubmit();
+            });
+
+            box.addEventListener('keydown', function(e) {
+                if (e.key === 'Backspace' && !this.value && index > 0) {
+                    otpBoxes[index - 1].focus();
+                }
+            });
+
+            box.addEventListener('paste', function(e) {
+                e.preventDefault();
+                const pastedData = (e.clipboardData || window.clipboardData).getData('text').trim().replace(/[^0-9]/g, '');
+                if (pastedData) {
+                    for (let i = 0; i < Math.min(pastedData.length, 6); i++) {
+                        otpBoxes[i].value = pastedData[i];
+                    }
+                    const focusIndex = Math.min(pastedData.length, 5);
+                    if (pastedData.length === 6) {
+                        otpBoxes[5].focus();
+                        checkAndAutoSubmit();
+                    } else {
+                        otpBoxes[focusIndex].focus();
+                    }
+                }
+            });
+        });
+
+        // Real-Time auto verification trigger when 6th digit is entered
+        function checkAndAutoSubmit() {
+            let code = '';
+            otpBoxes.forEach(box => code += box.value);
+            hiddenInput.value = code;
+
+            // Reset validation states
+            otpBoxes.forEach(box => box.classList.remove('is-invalid', 'is-valid'));
+            otpStatus.innerHTML = '';
+
+            if (code.length === 6) {
+                performRealTimeVerification(code);
+            }
+        }
+
+        // Real-Time AJAX Verification function
+        function performRealTimeVerification(code) {
+            otpStatus.innerHTML = '<span class="text-primary"><i class="fa-solid fa-spinner fa-spin me-1"></i> Verifying code in real time...</span>';
+            submitBtn.disabled = true;
+
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch("{% url 'verify_otp' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ otp_code: code })
+            })
+            .then(res => res.json())
+            .then(data => {
+                submitBtn.disabled = false;
+                if (data.success) {
+                    otpBoxes.forEach(box => box.classList.add('is-valid'));
+                    otpStatus.innerHTML = '<span class="text-success fs-6"><i class="fa-solid fa-circle-check me-1"></i> Verified! Redirecting...</span>';
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url || '/';
+                    }, 500);
+                } else {
+                    otpBoxes.forEach(box => box.classList.add('is-invalid'));
+                    otpStatus.innerHTML = `<span class="text-danger"><i class="fa-solid fa-circle-xmark me-1"></i> ${data.message}</span>`;
+                }
+            })
+            .catch(err => {
+                submitBtn.disabled = false;
+                otpStatus.innerHTML = '<span class="text-danger"><i class="fa-solid fa-triangle-exclamation me-1"></i> Connection error. Please try again.</span>';
+            });
+        }
+
+        // Form submit override
+        otpForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            let code = '';
+            otpBoxes.forEach(box => code += box.value);
+            if (code.length === 6) {
+                performRealTimeVerification(code);
+            } else {
+                otpStatus.innerHTML = '<span class="text-danger">Please enter all 6 digits.</span>';
+                otpBoxes.forEach(box => { if(!box.value) box.classList.add('is-invalid'); });
+            }
+        });
+
+        // 60-Second Real-Time Countdown Timer for Resend Button
+        let timeLeft = 60;
+        const countdownTimer = setInterval(() => {
+            timeLeft--;
+            countdownEl.textContent = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(countdownTimer);
+                timerText.classList.add('d-none');
+                resendBtn.classList.remove('d-none');
+            }
+        }, 1000);
+
+        // Real-Time AJAX Resend OTP
+        resendBtn.addEventListener('click', function() {
+            otpStatus.innerHTML = '<span class="text-info"><i class="fa-solid fa-spinner fa-spin me-1"></i> Sending new code...</span>';
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            fetch("{% url 'resend_otp' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    otpStatus.innerHTML = `<span class="text-success"><i class="fa-solid fa-circle-check me-1"></i> ${data.message}</span>`;
+                    otpBoxes.forEach(box => { box.value = ''; box.classList.remove('is-invalid', 'is-valid'); });
+                    otpBoxes[0].focus();
+                    
+                    // Reset Timer
+                    timeLeft = 60;
+                    countdownEl.textContent = timeLeft;
+                    timerText.classList.remove('d-none');
+                    resendBtn.classList.add('d-none');
+                } else {
+                    otpStatus.innerHTML = `<span class="text-danger">${data.message}</span>`;
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}
